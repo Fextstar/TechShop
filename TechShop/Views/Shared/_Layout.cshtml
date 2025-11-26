@@ -1,0 +1,183 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - TechShop</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/Site.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="@Url.Action("Index", "Home")">
+                <i class="fas fa-laptop"></i> TechShop
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Index", "Home")">Trang chủ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Products", "Home")">Sản phẩm</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("About", "Home")">Giới thiệu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Contact", "Home")">Liên hệ</a>
+                    </li>
+                </ul>
+
+                <!-- Search Form -->
+                <form class="form-inline my-2 my-lg-0 mr-3" method="get" action="@Url.Action("Products", "Home")">
+                    <div class="input-group">
+                        <input class="form-control" type="search" name="search" placeholder="Tìm sản phẩm..." aria-label="Search">
+                        <div class="input-group-append">
+                            <button class="btn btn-light" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Cart & User -->
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Index", "Cart")">
+                            <i class="fas fa-shopping-cart"></i>
+                            Giỏ hàng
+                            <span class="badge badge-warning" id="cartCount">0</span>
+                        </a>
+                    </li>
+
+                    @if (Session["UserID"] != null)
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown">
+                                <i class="fas fa-user"></i> @Session["FullName"]
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" href="@Url.Action("Profile", "Account")">
+                                    <i class="fas fa-user-circle"></i> Thông tin tài khoản
+                                </a>
+                                <a class="dropdown-item" href="@Url.Action("MyOrders", "Order")">
+                                    <i class="fas fa-box"></i> Đơn hàng của tôi
+                                </a>
+                                @if (Session["RoleName"]?.ToString() == "Admin")
+                                {
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="@Url.Action("Index", "Admin")">
+                                        <i class="fas fa-tachometer-alt"></i> Quản trị
+                                    </a>
+                                }
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="@Url.Action("Logout", "Account")">
+                                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                                </a>
+                            </div>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Login", "Account")">
+                                <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Register", "Account")">
+                                <i class="fas fa-user-plus"></i> Đăng ký
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        @if (TempData["Message"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                @TempData["Message"]
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        }
+
+        @RenderBody()
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>TechShop</h5>
+                    <p>Chuyên cung cấp thiết bị máy tính chính hãng, giá tốt nhất thị trường.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Liên kết</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="@Url.Action("About", "Home")" class="text-white">Giới thiệu</a></li>
+                        <li><a href="@Url.Action("Products", "Home")" class="text-white">Sản phẩm</a></li>
+                        <li><a href="@Url.Action("Contact", "Home")" class="text-white">Liên hệ</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Liên hệ</h5>
+                    <p>
+                        <i class="fas fa-map-marker-alt"></i> TP. Hồ Chí Minh<br>
+                        <i class="fas fa-phone"></i> 0704449834<br>
+                        <i class="fas fa-envelope"></i> 2200010884@nttu.edu.vn
+                    </p>
+                </div>
+            </div>
+            <hr class="bg-white">
+            <div class="text-center">
+                <p>&copy; 2025 TechShop. KLTN - Nguyễn Hồng Phúc - 2200010884</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script src="~/Scripts/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Load cart count khi trang load
+        $(document).ready(function() {
+            updateCartCount();
+        });
+
+        function updateCartCount() {
+            $.get('@Url.Action("GetCartCount", "Cart")', function(data) {
+                $('#cartCount').text(data.count);
+            });
+        }
+
+        // Thêm vào giỏ hàng
+        function addToCart(productId, quantity) {
+            quantity = quantity || 1;
+            $.post('@Url.Action("AddToCart", "Cart")',
+                { productId: productId, quantity: quantity },
+                function(data) {
+                    if (data.success) {
+                        $('#cartCount').text(data.cartCount);
+                        alert(data.message);
+                    } else {
+                        alert(data.message);
+                    }
+                }
+            );
+        }
+    </script>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>
