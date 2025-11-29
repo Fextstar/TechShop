@@ -1,0 +1,177 @@
+﻿@model TechShop.Models.Order
+@{
+    ViewBag.Title = "Đặt hàng thành công";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-success">
+                <div class="card-body text-center py-5">
+                    <div class="text-success mb-4">
+                        <i class="fas fa-check-circle fa-5x"></i>
+                    </div>
+                    <h2 class="text-success mb-3">Đặt hàng thành công!</h2>
+                    <p class="lead">Cảm ơn bạn đã đặt hàng tại TechShop</p>
+
+                    <div class="alert alert-info mt-4">
+                        <h5>Mã đơn hàng: <strong class="text-primary">@Model.OrderCode</strong></h5>
+                        <p class="mb-0">Vui lòng lưu lại mã đơn hàng để tra cứu</p>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-muted">Tổng tiền</h6>
+                                    <h4 class="text-danger mb-0">@Model.FinalAmount.ToString("N0") đ</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-muted">Phương thức thanh toán</h6>
+                                    <h5 class="mb-0">@Model.PaymentMethod</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <h5 class="mb-3">Thông tin giao hàng</h5>
+                    <div class="text-left">
+                        <p><strong>Người nhận:</strong> @Model.CustomerName</p>
+                        <p><strong>Số điện thoại:</strong> @Model.CustomerPhone</p>
+                        <p><strong>Địa chỉ:</strong> @Model.ShippingAddress</p>
+                    </div>
+
+                    @if (Model.PaymentMethod == "BankTransfer")
+                    {
+                        <div class="alert alert-warning mt-4">
+                            <h6><i class="fas fa-info-circle"></i> Thông tin chuyển khoản</h6>
+                            <p class="mb-1"><strong>Ngân hàng:</strong> Techcombank</p>
+                            <p class="mb-1"><strong>Số tài khoản:</strong> 1234567890</p>
+                            <p class="mb-1"><strong>Chủ tài khoản:</strong> TECHSHOP VIETNAM</p>
+                            <p class="mb-1"><strong>Nội dung:</strong> @Model.OrderCode</p>
+                            <p class="mb-0 text-danger"><small>* Vui lòng chuyển khoản và ghi đúng nội dung để đơn hàng được xử lý nhanh nhất</small></p>
+                        </div>
+                    }
+
+                    <hr class="my-4">
+
+                    <div class="mt-4">
+                        <a href="@Url.Action("OrderDetail", "Order", new { id = Model.OrderID })" class="btn btn-primary btn-lg mr-2">
+                            <i class="fas fa-eye"></i> Xem chi tiết đơn hàng
+                        </a>
+                        <a href="@Url.Action("Products", "Home")" class="btn btn-success btn-lg">
+                            <i class="fas fa-shopping-bag"></i> Tiếp tục mua sắm
+                        </a>
+                    </div>
+
+                    <div class="mt-4">
+                        <p class="text-muted small">
+                            <i class="fas fa-envelope"></i> Chúng tôi đã gửi email xác nhận đến <strong>@Model.CustomerEmail</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline trạng thái đơn hàng -->
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-clock"></i> Quy trình xử lý đơn hàng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="text-success"><i class="fas fa-check"></i> Đơn hàng đã đặt</h6>
+                                <p class="text-muted small mb-0">@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h6>Xác nhận đơn hàng</h6>
+                                <p class="text-muted small mb-0">Trong vòng 1-2 giờ</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h6>Chuẩn bị hàng</h6>
+                                <p class="text-muted small mb-0">1-2 ngày làm việc</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h6>Đang giao hàng</h6>
+                                <p class="text-muted small mb-0">2-3 ngày làm việc</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h6>Giao hàng thành công</h6>
+                                <p class="text-muted small mb-0">Nhận hàng và thanh toán</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <style>
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+            .timeline-item:before {
+                content: '';
+                position: absolute;
+                left: -22px;
+                top: 20px;
+                width: 2px;
+                height: 100%;
+                background: #dee2e6;
+            }
+
+            .timeline-item:last-child:before {
+                display: none;
+            }
+
+        .timeline-marker {
+            position: absolute;
+            left: -30px;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #dee2e6;
+            border: 3px solid #fff;
+            box-shadow: 0 0 0 2px #dee2e6;
+        }
+
+            .timeline-marker.bg-success {
+                background: #28a745;
+                box-shadow: 0 0 0 2px #28a745;
+            }
+
+        .timeline-content {
+            padding-left: 10px;
+        }
+    </style>
+}

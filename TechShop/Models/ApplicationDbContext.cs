@@ -10,9 +10,15 @@ namespace TechShop.Models
     {
         public ApplicationDbContext() : base("TechShopConnection")
         {
-            // Disable lazy loading if needed
-            // this.Configuration.LazyLoadingEnabled = false;
-            // this.Configuration.ProxyCreationEnabled = false;
+            // TẮT Database Initializer - QUAN TRỌNG!
+            Database.SetInitializer<ApplicationDbContext>(null);
+
+            // Tắt lazy loading và proxy
+            Configuration.LazyLoadingEnabled = false;
+            Configuration.ProxyCreationEnabled = false;
+
+            // TẮT VALIDATION để tránh lỗi decimal
+            Configuration.ValidateOnSaveEnabled = false;
         }
 
         // Users & Roles
@@ -56,23 +62,21 @@ namespace TechShop.Models
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            // Configure relationships
-
-            // User - Role (Many-to-One)
+            // User - Role
             modelBuilder.Entity<User>()
                 .HasRequired(u => u.Role)
                 .WithMany(r => r.Users)
                 .HasForeignKey(u => u.RoleID)
                 .WillCascadeOnDelete(false);
 
-            // Category - ParentCategory (Self-referencing)
+            // Category - ParentCategory
             modelBuilder.Entity<Category>()
                 .HasOptional(c => c.ParentCategory)
                 .WithMany(c => c.SubCategories)
                 .HasForeignKey(c => c.ParentCategoryID)
                 .WillCascadeOnDelete(false);
 
-            // Product relationships
+            // Product - Category, Brand, Supplier
             modelBuilder.Entity<Product>()
                 .HasRequired(p => p.Category)
                 .WithMany(c => c.Products)
@@ -91,7 +95,7 @@ namespace TechShop.Models
                 .HasForeignKey(p => p.SupplierID)
                 .WillCascadeOnDelete(false);
 
-            // ProductImage - Product (Many-to-One)
+            // ProductImage - Product
             modelBuilder.Entity<ProductImage>()
                 .HasRequired(pi => pi.Product)
                 .WithMany(p => p.ProductImages)
@@ -111,7 +115,7 @@ namespace TechShop.Models
                 .HasForeignKey(pr => pr.UserID)
                 .WillCascadeOnDelete(false);
 
-            // ShoppingCart - User (One-to-Many)
+            // ShoppingCart - User
             modelBuilder.Entity<ShoppingCart>()
                 .HasRequired(sc => sc.User)
                 .WithMany(u => u.ShoppingCarts)
@@ -131,7 +135,7 @@ namespace TechShop.Models
                 .HasForeignKey(ci => ci.ProductID)
                 .WillCascadeOnDelete(false);
 
-            // Order - User & OrderStatus
+            // Order - User & Status
             modelBuilder.Entity<Order>()
                 .HasRequired(o => o.User)
                 .WithMany(u => u.Orders)
@@ -157,7 +161,7 @@ namespace TechShop.Models
                 .HasForeignKey(od => od.ProductID)
                 .WillCascadeOnDelete(false);
 
-            // Post - Author (User)
+            // Post - Author
             modelBuilder.Entity<Post>()
                 .HasRequired(p => p.Author)
                 .WithMany(u => u.Posts)
@@ -171,46 +175,7 @@ namespace TechShop.Models
                 .HasForeignKey(al => al.UserID)
                 .WillCascadeOnDelete(false);
 
-            // Configure decimal precision
-            modelBuilder.Entity<Product>()
-                .Property(p => p.Price)
-                .HasPrecision(18, 2);
-
-            modelBuilder.Entity<Product>()
-                .Property(p => p.DiscountPrice)
-                .HasPrecision(18, 2);
-
-            modelBuilder.Entity<Product>()
-                .Property(p => p.Weight)
-                .HasPrecision(10, 2);
-
-            modelBuilder.Entity<Order>()
-                .Property(o => o.TotalAmount)
-                .HasPrecision(18, 2);
-
-            modelBuilder.Entity<Order>()
-                .Property(o => o.FinalAmount)
-                .HasPrecision(18, 2);
-
-            modelBuilder.Entity<Order>()
-                .Property(o => o.DiscountAmount)
-                .HasPrecision(18, 2);
-
-            modelBuilder.Entity<Order>()
-                .Property(o => o.ShippingFee)
-                .HasPrecision(18, 2);
-
             base.OnModelCreating(modelBuilder);
-        }
-
-        internal void Dispose()
-        {
-            throw new NotImplementedException();
-        }
-
-        internal void SaveChanges()
-        {
-            throw new NotImplementedException();
         }
     }
 }

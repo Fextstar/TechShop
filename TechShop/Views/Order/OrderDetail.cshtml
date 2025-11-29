@@ -1,0 +1,234 @@
+﻿@model TechShop.Models.Order
+@{
+    ViewBag.Title = "Chi tiết đơn hàng";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="@Url.Action("MyOrders", "Order")">Đơn hàng của tôi</a></li>
+        <li class="breadcrumb-item active">@Model.OrderCode</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Thông tin đơn hàng</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Mã đơn hàng:</strong> @Model.OrderCode</p>
+                        <p><strong>Ngày đặt:</strong> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+                        <p>
+                            <strong>Trạng thái:</strong>
+                            @switch (Model.Status.StatusName)
+                            {
+                                case "Chờ xác nhận":
+                                    <span class="badge badge-warning">@Model.Status.StatusName</span>
+                                    break;
+                                case "Đã xác nhận":
+                                    <span class="badge badge-info">@Model.Status.StatusName</span>
+                                    break;
+                                case "Đang chuẩn bị":
+                                case "Đang giao":
+                                    <span class="badge badge-primary">@Model.Status.StatusName</span>
+                                    break;
+                                case "Đã giao":
+                                    <span class="badge badge-success">@Model.Status.StatusName</span>
+                                    break;
+                                case "Đã hủy":
+                                    <span class="badge badge-danger">@Model.Status.StatusName</span>
+                                    break;
+                                default:
+                                    <span class="badge badge-secondary">@Model.Status.StatusName</span>
+                                    break;
+                            }
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Phương thức thanh toán:</strong> @Model.PaymentMethod</p>
+                        <p>
+                            <strong>Trạng thái thanh toán:</strong>
+                            @if (Model.PaymentStatus == "Đã thanh toán")
+                            {
+                                <span class="badge badge-success">@Model.PaymentStatus</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-secondary">@Model.PaymentStatus</span>
+                            }
+                        </p>
+                        @if (Model.ShippedDate.HasValue)
+                        {
+                            <p><strong>Ngày giao hàng:</strong> @Model.ShippedDate.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                        }
+                        @if (Model.DeliveredDate.HasValue)
+                        {
+                            <p><strong>Ngày nhận hàng:</strong> @Model.DeliveredDate.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                        }
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Note))
+                {
+                    <div class="alert alert-info mt-3">
+                        <strong>Ghi chú:</strong> @Model.Note
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.CancelReason))
+                {
+                    <div class="alert alert-danger mt-3">
+                        <strong>Lý do hủy:</strong> @Model.CancelReason
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Thông tin giao hàng -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-shipping-fast"></i> Thông tin giao hàng</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Người nhận:</strong> @Model.CustomerName</p>
+                <p><strong>Số điện thoại:</strong> @Model.CustomerPhone</p>
+                <p><strong>Email:</strong> @Model.CustomerEmail</p>
+                <p><strong>Địa chỉ:</strong> @Model.ShippingAddress</p>
+            </div>
+        </div>
+
+        <!-- Sản phẩm -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-box"></i> Sản phẩm (@Model.OrderDetails.Count)</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th>Đơn giá</th>
+                                <th>Số lượng</th>
+                                <th>Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var detail in Model.OrderDetails)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            @if (detail.Product?.ProductImages != null && detail.Product.ProductImages.Any())
+                                            {
+                                                var primaryImage = detail.Product.ProductImages.FirstOrDefault(i => i.IsPrimary);
+                                                <img src="@(primaryImage?.ImageURL ?? "/Content/Images/no-image.jpg")"
+                                                     alt="@detail.ProductName"
+                                                     style="width: 60px; height: 60px; object-fit: cover;"
+                                                     class="mr-3">
+                                            }
+                                            else
+                                            {
+                                                <img src="/Content/Images/no-image.jpg"
+                                                     alt="@detail.ProductName"
+                                                     style="width: 60px; height: 60px; object-fit: cover;"
+                                                     class="mr-3">
+                                            }
+                                            <div>
+                                                <a href="@Url.Action("ProductDetail", "Home", new { id = detail.ProductID })">
+                                                    @detail.ProductName
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>@detail.UnitPrice.ToString("N0") đ</td>
+                                    <td>@detail.Quantity</td>
+                                    <td class="text-danger font-weight-bold">@detail.TotalPrice.ToString("N0") đ</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tổng tiền -->
+    <div class="col-md-4">
+        <div class="card sticky-top" style="top: 20px;">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-receipt"></i> Tổng thanh toán</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr>
+                        <td>Tạm tính:</td>
+                        <td class="text-right"><strong>@Model.TotalAmount.ToString("N0") đ</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Phí vận chuyển:</td>
+                        <td class="text-right">@Model.ShippingFee.ToString("N0") đ</td>
+                    </tr>
+                    @if (Model.DiscountAmount > 0)
+                    {
+                        <tr class="text-success">
+                            <td>Giảm giá:</td>
+                            <td class="text-right">-@Model.DiscountAmount.ToString("N0") đ</td>
+                        </tr>
+                    }
+                    <tr class="border-top">
+                        <td><strong>Tổng cộng:</strong></td>
+                        <td class="text-right">
+                            <h4 class="text-danger mb-0">@Model.FinalAmount.ToString("N0") đ</h4>
+                        </td>
+                    </tr>
+                </table>
+
+                @if (Model.Status.StatusName == "Chờ xác nhận" || Model.Status.StatusName == "Đã xác nhận")
+                {
+                    <button class="btn btn-danger btn-block" onclick="cancelOrder(@Model.OrderID)">
+                        <i class="fas fa-times"></i> Hủy đơn hàng
+                    </button>
+                }
+
+                <a href="@Url.Action("MyOrders", "Order")" class="btn btn-secondary btn-block">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+
+                @if (Model.Status.StatusName == "Đã giao")
+                {
+                    <a href="@Url.Action("Products", "Home")" class="btn btn-success btn-block">
+                        <i class="fas fa-shopping-bag"></i> Mua lại
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function cancelOrder(orderId) {
+            var reason = prompt("Lý do hủy đơn hàng:");
+            if (reason) {
+                if (confirm("Bạn có chắc muốn hủy đơn hàng này?")) {
+                    $.post('@Url.Action("CancelOrder", "Order")',
+                        { id: orderId, reason: reason },
+                        function(data) {
+                            if (data.success) {
+                                alert(data.message);
+                                location.reload();
+                            } else {
+                                alert(data.message);
+                            }
+                        }
+                    );
+                }
+            }
+        }
+    </script>
+}
