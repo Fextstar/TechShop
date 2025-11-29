@@ -20,9 +20,11 @@ namespace TechShop
             bundles.Add(new ScriptBundle("~/bundles/modernizr").Include(
                         "~/Scripts/modernizr-*"));
 
-            // Bootstrap bundle
+            // Bootstrap bundle (requires jQuery and Popper.js)
             bundles.Add(new ScriptBundle("~/bundles/bootstrap").Include(
-                      "~/Scripts/bootstrap.js"));
+                      "~/Scripts/jquery-{version}.js",
+                      "~/Scripts/popper.min.js",
+                      "~/Scripts/bootstrap. js"));
 
             // CSS bundle
             bundles.Add(new StyleBundle("~/Content/css").Include(
