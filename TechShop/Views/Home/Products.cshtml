@@ -71,15 +71,15 @@
                     {
                         <div class="col-md-4 col-sm-6 mb-4">
                             <div class="card h-100 product-card">
-                                <a href="@Url.Action("ProductDetail", "Home", new { id = product.ProductId })">
-                                    <img src="@(string.IsNullOrEmpty(product.ImageUrl) ? "/Content/Images/no-image.jpg" : product.ImageUrl)"
+                                <a href="@Url.Action("ProductDetail", "Home", new { id = product.ProductID })">
+                                    <img src="@(string.IsNullOrEmpty(product.PrimaryImageUrl) ? "/Content/Images/no-image.jpg" : product.PrimaryImageUrl)"
                                          class="card-img-top"
                                          alt="@product.ProductName"
                                          style="height: 200px; object-fit: cover;">
                                 </a>
                                 <div class="card-body">
                                     <h5 class="card-title">
-                                        <a href="@Url.Action("ProductDetail", "Home", new { id = product.ProductId })" class="text-dark text-decoration-none">
+                                        <a href="@Url.Action("ProductDetail", "Home", new { id = product.ProductID })" class="text-dark text-decoration-none">
                                             @product.ProductName
                                         </a>
                                     </h5>
@@ -104,7 +104,7 @@
                                 <div class="card-footer bg-white border-0">
                                     @if (product.StockQuantity > 0)
                                     {
-                                        <button class="btn btn-primary btn-block" onclick="addToCart(@product.ProductId)">
+                                        <button class="btn btn-primary btn-block" onclick="addToCart(@product.ProductID)">
                                             <i class="fas fa-cart-plus"></i> Thêm vào giỏ
                                         </button>
                                     }
