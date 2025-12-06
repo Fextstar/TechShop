@@ -1,0 +1,644 @@
+﻿@model System.Data.DataTable
+
+@{
+    ViewBag.Title = "Quản lý sản phẩm";
+    string fullName = Session["FullName"]?.ToString() ?? "Admin";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6fa;
+        }
+
+        /* Sidebar - Same as Dashboard */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .menu-item {
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: white;
+        }
+
+        .menu-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        /* Table */
+        .table-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+
+        table th {
+            background: #f5f6fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 2px solid #e0e0e0;
+            white-space: nowrap;
+        }
+
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #f5f6fa;
+        }
+
+        table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .product-img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .stock-low {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .stock-ok {
+            color: #28a745;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        .pagination a, .pagination span {
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .pagination a:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .pagination .active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .close {
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        @@media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .filter-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-laptop"></i>
+                <span>Computer Shop</span>
+            </div>
+        </div>
+
+        <div class="sidebar-menu">
+            <a href="@Url.Action("Index", "Admin")" class="menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="@Url.Action("Products", "Admin")" class="menu-item active">
+                <i class="fas fa-box"></i>
+                <span>Quản lý sản phẩm</span>
+            </a>
+            <a href="@Url.Action("Orders", "Admin")" class="menu-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Quản lý đơn hàng</span>
+            </a>
+            <a href="@Url.Action("Users", "Admin")" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span>Quản lý người dùng</span>
+            </a>
+            <a href="@Url.Action("Logout", "Account")" class="menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Đăng xuất</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <div class="topbar">
+            <h1 class="page-title">
+                <i class="fas fa-box"></i> Quản lý sản phẩm
+            </h1>
+            <a href="@Url.Action("ProductCreate", "Admin")" class="btn btn-success">
+                <i class="fas fa-plus"></i> Thêm sản phẩm
+            </a>
+        </div>
+
+        <!-- Alerts -->
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+            </div>
+        }
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            @using (Html.BeginForm("Products", "Admin", FormMethod.Get))
+            {
+                <div class="filter-row">
+                    <div class="form-group">
+                        <label>Tìm kiếm</label>
+                        <input type="text" name="search" class="form-control"
+                               placeholder="Tên sản phẩm, SKU..." value="@ViewBag.Search" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Danh mục</label>
+                        <select name="categoryId" class="form-control">
+                            <option value="0">Tất cả danh mục</option>
+                            @if (ViewBag.Categories != null)
+                            {
+                                foreach (System.Data.DataRow row in ViewBag.Categories.Rows)
+                                {
+                                    <option value="@row["CategoryID"]"
+                                            @(ViewBag.CategoryId == (int)row["CategoryID"] ? "selected" : "")>
+                                        @row["CategoryName"]
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Products Table -->
+        <div class="table-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Sản phẩm</th>
+                        <th>SKU</th>
+                        <th>Danh mục</th>
+                        <th>Thương hiệu</th>
+                        <th>Giá</th>
+                        <th>Tồn kho</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Rows.Count > 0)
+                    {
+                        foreach (System.Data.DataRow row in Model.Rows)
+                        {
+                            int stockQty = Convert.ToInt32(row["StockQuantity"]);
+                            bool isActive = Convert.ToBoolean(row["IsActive"]);
+                            decimal price = Convert.ToDecimal(row["Price"]);
+                            object discountPrice = row["DiscountPrice"];
+
+                            <tr>
+                                <td><strong>@row["ProductID"]</strong></td>
+                                <td>
+                                    <strong>@row["ProductName"]</strong>
+                                    @if (Convert.ToBoolean(row["IsFeatured"]))
+                                    {
+                                        <span class="badge badge-warning">
+                                            <i class="fas fa-star"></i> Nổi bật
+                                        </span>
+                                    }
+                                </td>
+                                <td>@row["SKU"]</td>
+                                <td>@row["CategoryName"]</td>
+                                <td>@row["BrandName"]</td>
+                                <td>
+                                    @if (discountPrice != DBNull.Value)
+                                    {
+                                        <span style="text-decoration: line-through; color: #999;">
+                                            @price.ToString("N0") đ
+                                        </span>
+                                        <br />
+                                        <strong style="color: #dc3545;">
+                                            @Convert.ToDecimal(discountPrice).ToString("N0") đ
+                                        </strong>
+                                    }
+                                    else
+                                    {
+                                        <strong>@price.ToString("N0") đ</strong>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="@(stockQty <= 5 ? "stock-low" : "stock-ok")">
+                                        @stockQty
+                                        @if (stockQty <= 5)
+                                        {
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        }
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (isActive)
+                                    {
+                                        <span class="badge badge-success">Hoạt động</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">Tạm ẩn</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a href="@Url.Action("ProductEdit", "Admin", new { id = row["ProductID"] })"
+                                       class="btn btn-warning btn-sm">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button onclick="confirmDelete(@row["ProductID"])"
+                                            class="btn btn-danger btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 30px;">
+                                <i class="fas fa-inbox" style="font-size: 48px; color: #ccc;"></i>
+                                <p style="margin-top: 10px; color: #999;">Không có sản phẩm nào</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <a href="@Url.Action("Products", new { page = 1 })">« Đầu</a>
+                @for (int i = 1; i <= 5; i++)
+                {
+                    if (i == ViewBag.CurrentPage)
+                    {
+                        <span class="active">@i</span>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Products", new { page = i })">@i</a>
+                    }
+                }
+                <a href="@Url.Action("Products", new { page = 5 })">Cuối »</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Xác nhận xóa</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <p>Bạn có chắc chắn muốn xóa sản phẩm này không?</p>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-danger" onclick="deleteProduct()">
+                    <i class="fas fa-trash"></i> Xóa
+                </button>
+                <button class="btn" onclick="closeModal()" style="background: #e0e0e0;">
+                    Hủy
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let deleteProductId = 0;
+
+        function confirmDelete(productId) {
+            deleteProductId = productId;
+            document.getElementById('deleteModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+        }
+
+        function deleteProduct() {
+            fetch('@Url.Action("ProductDelete", "Admin")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: deleteProductId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Xóa sản phẩm thành công!');
+                    location.reload();
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Lỗi: ' + error);
+            });
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('deleteModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

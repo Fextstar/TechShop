@@ -24,7 +24,7 @@
                             <tbody>
                                 @foreach (var item in Model)
                                 {
-                                    <tr id="cart-item-@item.ProductId">
+                                    <tr id="cart-item-@item.ProductID">
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/Content/Images/no-image.jpg" : item.ImageUrl)"
@@ -41,30 +41,30 @@
                                             <div class="input-group" style="width: 130px;">
                                                 <div class="input-group-prepend">
                                                     <button class="btn btn-sm btn-outline-secondary" type="button"
-                                                            onclick="updateQuantity(@item.ProductId, @(item.Quantity - 1))">
+                                                            onclick="updateQuantity(@item.ProductID, @(item.Quantity - 1))">
                                                         <i class="fas fa-minus"></i>
                                                     </button>
                                                 </div>
                                                 <input type="number" class="form-control form-control-sm text-center"
-                                                       id="quantity-@item.ProductId"
+                                                       id="quantity-@item.ProductID"
                                                        value="@item.Quantity"
                                                        min="1"
-                                                       onchange="updateQuantity(@item.ProductId, this.value)">
+                                                       onchange="updateQuantity(@item.ProductID, this.value)">
                                                 <div class="input-group-append">
                                                     <button class="btn btn-sm btn-outline-secondary" type="button"
-                                                            onclick="updateQuantity(@item.ProductId, @(item.Quantity + 1))">
+                                                            onclick="updateQuantity(@item.ProductID, @(item.Quantity + 1))">
                                                         <i class="fas fa-plus"></i>
                                                     </button>
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="align-middle">
-                                            <strong class="text-danger" id="total-@item.ProductId">
+                                            <strong class="text-danger" id="total-@item.ProductID">
                                                 @item.TotalPrice.ToString("N0") đ
                                             </strong>
                                         </td>
                                         <td class="align-middle">
-                                            <button class="btn btn-sm btn-danger" onclick="removeFromCart(@item.ProductId)">
+                                            <button class="btn btn-sm btn-danger" onclick="removeFromCart(@item.ProductID)">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </td>

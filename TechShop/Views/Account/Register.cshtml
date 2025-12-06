@@ -1,0 +1,368 @@
+﻿@model TechShop.Models.RegisterViewModel
+
+@{
+    ViewBag.Title = "Đăng ký tài khoản - TechShop";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            min-height: 650px;
+        }
+
+        .form-container {
+            flex: 1.5;
+            padding: 50px 50px;
+            overflow-y: auto;
+            max-height: 650px;
+        }
+
+        .side-panel {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #667eea;
+            font-size: 24px;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 11px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+            .form-control:focus {
+                outline: none;
+                border-color: #667eea;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            }
+
+            .form-control.input-validation-error {
+                border-color: #e74c3c;
+            }
+
+        .field-validation-error {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .validation-summary-errors {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+            .validation-summary-errors ul {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            }
+
+        .switch-form {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+            .switch-form a {
+                color: #667eea;
+                text-decoration: none;
+                font-weight: 600;
+            }
+
+                .switch-form a:hover {
+                    text-decoration: underline;
+                }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+            .form-row .form-group {
+                flex: 1;
+            }
+
+        .features {
+            list-style: none;
+            text-align: left;
+            margin-top: 30px;
+        }
+
+            .features li {
+                padding: 10px 0;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 14px;
+            }
+
+                .features li:before {
+                    content: "✓";
+                    background: rgba(255, 255, 255, 0.2);
+                    width: 22px;
+                    height: 22px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: bold;
+                    flex-shrink: 0;
+                }
+
+        .password-hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        @@media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .form-row {
+                flex-direction: column;
+            }
+
+            .side-panel {
+                padding: 30px 20px;
+            }
+
+            .form-container {
+                padding: 35px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Form Đăng ký -->
+        <div class="form-container">
+            <h2>Đăng ký tài khoản</h2>
+            <p class="subtitle">Tạo tài khoản mới để bắt đầu mua sắm</p>
+
+            @* Hiển thị lỗi validation *@
+            @Html.ValidationSummary(false, "", new { @class = "validation-summary-errors" })
+
+            @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "register-form" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.FullName, new { @class = "control-label" })
+                    <span class="required">*</span>
+                    @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", placeholder = "Nhập họ và tên đầy đủ" })
+                    @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "field-validation-error" })
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Username, new { @class = "control-label" })
+                        <span class="required">*</span>
+                        @Html.TextBoxFor(m => m.Username, new { @class = "form-control", placeholder = "Chọn tên đăng nhập" })
+                        @Html.ValidationMessageFor(m => m.Username, "", new { @class = "field-validation-error" })
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.PhoneNumber, new { @class = "control-label" })
+                        <span class="required">*</span>
+                        @Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-control", placeholder = "0xxxxxxxxx" })
+                        @Html.ValidationMessageFor(m => m.PhoneNumber, "", new { @class = "field-validation-error" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Email, new { @class = "control-label" })
+                    <span class="required">*</span>
+                    @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "example@email.com", type = "email" })
+                    @Html.ValidationMessageFor(m => m.Email, "", new { @class = "field-validation-error" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Address, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Address, new { @class = "form-control", placeholder = "Nhập địa chỉ (không bắt buộc)" })
+                    @Html.ValidationMessageFor(m => m.Address, "", new { @class = "field-validation-error" })
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Password, new { @class = "control-label" })
+                        <span class="required">*</span>
+                        @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Tối thiểu 6 ký tự" })
+                        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "field-validation-error" })
+                        <span class="password-hint">Tối thiểu 6 ký tự</span>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.ConfirmPassword, new { @class = "control-label" })
+                        <span class="required">*</span>
+                        @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", placeholder = "Nhập lại mật khẩu" })
+                        @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "field-validation-error" })
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Đăng ký</button>
+            }
+
+            <div class="switch-form">
+                Đã có tài khoản?
+                @Html.ActionLink("Đăng nhập", "Login", "Account")
+            </div>
+        </div>
+
+        <!-- Side Panel -->
+        <div class="side-panel">
+            <div class="logo">
+                <div class="logo-icon">💻</div>
+                <span>Computer Shop</span>
+            </div>
+
+            <div class="side-content">
+                <h3>Tại sao chọn Computer Shop?</h3>
+                <p>Trở thành thành viên để nhận nhiều ưu đãi độc quyền</p>
+
+                <ul class="features">
+                    <li>Giảm giá đặc biệt cho thành viên</li>
+                    <li>Tích điểm mỗi đơn hàng</li>
+                    <li>Ưu tiên giao hàng nhanh</li>
+                    <li>Nhận thông báo khuyến mãi sớm</li>
+                    <li>Hỗ trợ kỹ thuật miễn phí</li>
+                    <li>Bảo hành mở rộng</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    @* Scripts cho validation *@
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>

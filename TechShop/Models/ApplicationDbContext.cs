@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Web;
+using System.Data.Entity.ModelConfiguration.Conventions; // Thêm thư viện này
 
 namespace TechShop.Models
 {
@@ -17,8 +18,8 @@ namespace TechShop.Models
             Configuration.LazyLoadingEnabled = false;
             Configuration.ProxyCreationEnabled = false;
 
-            // TẮT VALIDATION để tránh lỗi decimal
-            Configuration.ValidateOnSaveEnabled = false;
+            // Bật lại Validation - Không cần tắt Validation khi đã cấu hình đúng ánh xạ.
+            Configuration.ValidateOnSaveEnabled = true;
         }
 
         // Users & Roles
@@ -62,6 +63,30 @@ namespace TechShop.Models
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
+            // 1. CẤU HÌNH KIỂU DECIMAL ĐỂ KHẮC PHỤC LỖI PROVIDER MANIFEST
+
+            // Thiết lập mặc định cho tất cả các thuộc tính decimal thành decimal(18, 2)
+            // Bằng cách thêm convention này, bạn không cần phải cấu hình từng thuộc tính decimal riêng lẻ.
+            modelBuilder.Properties<decimal>()
+                .Configure(config => config.HasColumnType("decimal").HasPrecision(18, 2));
+
+            /* HOẶC, nếu muốn chỉ định cho từng lớp cụ thể:
+            modelBuilder.Entity<Product>()
+                .Property(p => p.Price)
+                .HasColumnType("decimal")
+                .HasPrecision(18, 2);
+            
+            modelBuilder.Entity<Order>()
+                .Property(o => o.TotalAmount) // Thay TotalAmount bằng tên thuộc tính decimal trong Order
+                .HasColumnType("decimal")
+                .HasPrecision(18, 2);
+            */
+
+            // 2. CẤU HÌNH QUAN HỆ (GIỮ NGUYÊN HOẶC TỐI ƯU HƠN)
+
+            // Loại bỏ quy ước đặt tên bảng số nhiều (tùy chọn)
+            modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
+
             // User - Role
             modelBuilder.Entity<User>()
                 .HasRequired(u => u.Role)

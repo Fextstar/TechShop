@@ -44,11 +44,11 @@ namespace TechShop.Models
         [Required(ErrorMessage = "Giá sản phẩm không được để trống")]
         [Display(Name = "Giá")]
         [Range(0, double.MaxValue, ErrorMessage = "Giá phải lớn hơn 0")]
-        [Column(TypeName = "decimal")]
+        [Column(TypeName = "money")]
         public decimal Price { get; set; }
 
         [Display(Name = "Giá giảm")]
-        [Column(TypeName = "decimal")]
+        [Column(TypeName = "money")]
         public decimal? DiscountPrice { get; set; }
 
         [Display(Name = "Số lượng tồn")]
@@ -58,7 +58,7 @@ namespace TechShop.Models
         public int MinStockLevel { get; set; }
 
         [Display(Name = "Trọng lượng (kg)")]
-        [Column(TypeName = "decimal")]
+        [Column(TypeName = "money")]
         public decimal? Weight { get; set; }
 
         [Display(Name = "Bảo hành (tháng)")]

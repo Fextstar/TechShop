@@ -1,323 +1,434 @@
 ﻿using System;
-using System.Linq;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
+using System.Web;
 using System.Web.Mvc;
+using System.Web.Security;
 using TechShop.Models;
-using System.Data.Entity;
 
 namespace TechShop.Controllers
 {
+    /// <summary>
+    /// Controller xử lý đăng nhập, đăng ký, đăng xuất
+    /// File này đặt trong: Controllers/AccountController.cs
+    /// </summary>
     public class AccountController : Controller
     {
-        private ApplicationDbContext db = new ApplicationDbContext();
+        // Lấy connection string từ Web.config
+        private readonly string connectionString = ConfigurationManager.ConnectionStrings["TechShopConnection"].ConnectionString;
 
-        // Trang đăng nhập
-        public ActionResult Login()
+        // ==================== ĐĂNG NHẬP ====================
+
+        // GET: Account/Login
+        [HttpGet]
+        [AllowAnonymous]
+        public ActionResult Login(string returnUrl)
         {
+            // Nếu đã đăng nhập, chuyển hướng về trang chủ
             if (Session["UserID"] != null)
             {
-                return RedirectToAction("Index", "Home");
+                return RedirectToHome();
             }
+
+            ViewBag.ReturnUrl = returnUrl;
             return View();
         }
 
-        // Xử lý đăng nhập
+        // POST: Account/Login
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public ActionResult Login(string username, string password, string returnUrl)
+        public ActionResult Login(LoginViewModel model, string returnUrl)
         {
-            var user = db.Users
-                .Include(u => u.Role)
-                .FirstOrDefault(u => u.Username == username);
-
-            if (user == null)
+            if (!ModelState.IsValid)
             {
-                ModelState.AddModelError("", "Tên đăng nhập không tồn tại");
-                return View();
+                return View(model);
             }
 
-            if (!user.IsActive)
+            try
             {
-                ModelState.AddModelError("", "Tài khoản đã bị khóa");
-                return View();
+                // Xác thực người dùng
+                User user = AuthenticateUser(model.Username, model.Password);
+
+                if (user != null)
+                {
+                    // Đăng nhập thành công
+                    SetUserSession(user);
+                    UpdateLastLogin(user.UserID);
+                    LogActivity(user.UserID, "Đăng nhập hệ thống");
+
+                    // Xử lý Remember Me
+                    if (model.RememberMe)
+                    {
+                        FormsAuthentication.SetAuthCookie(model.Username, true);
+                        
+                        // Tạo cookie tùy chỉnh
+                        HttpCookie rememberCookie = new HttpCookie("RememberMe");
+                        rememberCookie["Username"] = model.Username;
+                        rememberCookie.Expires = DateTime.Now.AddDays(30);
+                        Response.Cookies.Add(rememberCookie);
+                    }
+                    else
+                    {
+                        FormsAuthentication.SetAuthCookie(model.Username, false);
+                    }
+
+                    TempData["SuccessMessage"] = $"Chào mừng {user.FullName}!";
+
+                    // Chuyển hướng
+                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    {
+                        return Redirect(returnUrl);
+                    }
+
+                    return RedirectToHome();
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Tên đăng nhập hoặc mật khẩu không đúng!");
+                    return View(model);
+                }
             }
-
-            // Mã hóa password để so sánh
-            string hashedPassword = HashPassword(password);
-
-            if (user.Password != hashedPassword && user.Password != password)
+            catch (Exception ex)
             {
-                ModelState.AddModelError("", "Mật khẩu không đúng");
-                return View();
+                ModelState.AddModelError("", "Lỗi hệ thống: " + ex.Message);
+                LogError(ex);
+                return View(model);
             }
-
-            // Đăng nhập thành công
-            Session["UserID"] = user.UserID;
-            Session["Username"] = user.Username;
-            Session["FullName"] = user.FullName;
-            Session["RoleID"] = user.RoleID;
-            Session["RoleName"] = user.Role.RoleName;
-
-            // Cập nhật LastLogin
-            user.LastLogin = DateTime.Now;
-            db.SaveChanges();
-
-            // Log activity
-            LogActivity(user.UserID, "Đăng nhập", "Users", user.UserID);
-
-            // Chuyển hướng
-            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-            {
-                return Redirect(returnUrl);
-            }
-
-            if (user.Role.RoleName == "Admin" || user.Role.RoleName == "Manager")
-            {
-                return RedirectToAction("Index", "Admin");
-            }
-
-            return RedirectToAction("Index", "Home");
         }
 
-        // Trang đăng ký
+        // ==================== ĐĂNG KÝ ====================
+
+        // GET: Account/Register
+        [HttpGet]
+        [AllowAnonymous]
         public ActionResult Register()
         {
             if (Session["UserID"] != null)
             {
-                return RedirectToAction("Index", "Home");
+                return RedirectToHome();
             }
+
             return View();
         }
 
-        // Xử lý đăng ký
+        // POST: Account/Register
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public ActionResult Register(User user, string confirmPassword)
+        public ActionResult Register(RegisterViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            try
             {
                 // Kiểm tra username đã tồn tại
-                if (db.Users.Any(u => u.Username == user.Username))
+                if (IsUsernameExists(model.Username))
                 {
                     ModelState.AddModelError("Username", "Tên đăng nhập đã tồn tại");
-                    return View(user);
+                    return View(model);
                 }
 
                 // Kiểm tra email đã tồn tại
-                if (db.Users.Any(u => u.Email == user.Email))
+                if (IsEmailExists(model.Email))
                 {
-                    ModelState.AddModelError("Email", "Email đã được sử dụng");
-                    return View(user);
+                    ModelState.AddModelError("Email", "Email đã được đăng ký");
+                    return View(model);
                 }
 
-                // Kiểm tra mật khẩu xác nhận
-                if (user.Password != confirmPassword)
+                // Tạo tài khoản mới
+                int userId = CreateUser(model);
+
+                if (userId > 0)
                 {
-                    ModelState.AddModelError("", "Mật khẩu xác nhận không khớp");
-                    return View(user);
+                    TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+                    return RedirectToAction("Login");
                 }
-
-                // Mã hóa mật khẩu
-                user.Password = HashPassword(user.Password);
-
-                // Gán role Customer (RoleID = 4)
-                var customerRole = db.Roles.FirstOrDefault(r => r.RoleName == "Customer");
-                user.RoleID = customerRole?.RoleID ?? 4;
-
-                user.IsActive = true;
-                user.CreatedDate = DateTime.Now;
-
-                db.Users.Add(user);
-                db.SaveChanges();
-
-                // Log activity
-                LogActivity(user.UserID, "Đăng ký tài khoản", "Users", user.UserID);
-
-                TempData["Message"] = "Đăng ký thành công! Vui lòng đăng nhập.";
-                return RedirectToAction("Login");
+                else
+                {
+                    ModelState.AddModelError("", "Đăng ký thất bại. Vui lòng thử lại.");
+                    return View(model);
+                }
             }
-
-            return View(user);
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Lỗi hệ thống: " + ex.Message);
+                LogError(ex);
+                return View(model);
+            }
         }
 
-        // Đăng xuất
+        // ==================== ĐĂNG XUẤT ====================
+
+        // GET: Account/Logout
+        [HttpGet]
         public ActionResult Logout()
         {
-            int? userId = Session["UserID"] as int?;
-            if (userId.HasValue)
+            if (Session["UserID"] != null)
             {
-                LogActivity(userId.Value, "Đăng xuất", "Users", userId.Value);
+                int userId = Convert.ToInt32(Session["UserID"]);
+                LogActivity(userId, "Đăng xuất hệ thống");
             }
 
+            // Xóa session
             Session.Clear();
             Session.Abandon();
-            return RedirectToAction("Index", "Home");
+
+            // Xóa Forms Authentication
+            FormsAuthentication.SignOut();
+
+            // Xóa cookies
+            if (Request.Cookies["RememberMe"] != null)
+            {
+                HttpCookie cookie = new HttpCookie("RememberMe");
+                cookie.Expires = DateTime.Now.AddDays(-1);
+                Response.Cookies.Add(cookie);
+            }
+
+            TempData["SuccessMessage"] = "Đăng xuất thành công!";
+            return RedirectToAction("Login");
         }
 
-        // Thông tin tài khoản
-        public new ActionResult Profile()
+        // ==================== PRIVATE METHODS ====================
+
+        /// <summary>
+        /// Xác thực người dùng
+        /// </summary>
+        private User AuthenticateUser(string username, string password)
         {
-            if (Session["UserID"] == null)
+            User user = null;
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                return RedirectToAction("Login");
-            }
+                string query = @"
+                    SELECT u.UserID, u.Username, u.Email, u.FullName, 
+                           u.PhoneNumber, u.Address, u.RoleID, r.RoleName, 
+                           u.IsActive, u.CreatedDate, u.LastLogin
+                    FROM Users u
+                    INNER JOIN Roles r ON u.RoleID = r.RoleID
+                    WHERE (u.Username = @Username OR u.Email = @Username) 
+                    AND u.Password = @Password
+                    AND u.IsActive = 1";
 
-            int userId = (int)Session["UserID"];
-            var user = db.Users
-                .Include(u => u.Role)
-                .FirstOrDefault(u => u.UserID == userId);
-
-            if (user == null)
-            {
-                return HttpNotFound();
-            }
-
-            return View(user);
-        }
-
-        // Cập nhật thông tin
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public new ActionResult Profile(User user)
-        {
-            if (Session["UserID"] == null)
-            {
-                return RedirectToAction("Login");
-            }
-
-            if (ModelState.IsValid)
-            {
-                var existingUser = db.Users.Find(user.UserID);
-                if (existingUser == null)
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    return HttpNotFound();
-                }
+                    cmd.Parameters.AddWithValue("@Username", username);
+                    
+                    // TODO: Trong thực tế phải hash password (SHA256, BCrypt)
+                    cmd.Parameters.AddWithValue("@Password", password);
 
-                // Kiểm tra email trùng
-                if (db.Users.Any(u => u.Email == user.Email && u.UserID != user.UserID))
+                    conn.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            user = new User
+                            {
+                                UserID = Convert.ToInt32(reader["UserID"]),
+                                Username = reader["Username"].ToString(),
+                                Email = reader["Email"].ToString(),
+                                FullName = reader["FullName"].ToString(),
+                                PhoneNumber = reader["PhoneNumber"].ToString(),
+                                Address = reader["Address"]?.ToString(),
+                                RoleID = Convert.ToInt32(reader["RoleID"]),
+                                RoleName = reader["RoleName"].ToString(),
+                                IsActive = Convert.ToBoolean(reader["IsActive"]),
+                                CreatedDate = Convert.ToDateTime(reader["CreatedDate"])
+                            };
+                        }
+                    }
+                }
+            }
+
+            return user;
+        }
+
+        /// <summary>
+        /// Kiểm tra username đã tồn tại
+        /// </summary>
+        private bool IsUsernameExists(string username)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "SELECT COUNT(*) FROM Users WHERE Username = @Username";
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    ModelState.AddModelError("Email", "Email đã được sử dụng");
-                    return View(user);
+                    cmd.Parameters.AddWithValue("@Username", username);
+                    conn.Open();
+                    int count = (int)cmd.ExecuteScalar();
+                    return count > 0;
                 }
-
-                // Cập nhật thông tin (không cho phép đổi username và password ở đây)
-                existingUser.FullName = user.FullName;
-                existingUser.Email = user.Email;
-                existingUser.PhoneNumber = user.PhoneNumber;
-                existingUser.Address = user.Address;
-
-                db.SaveChanges();
-
-                // Log activity
-                LogActivity(user.UserID, "Cập nhật thông tin", "Users", user.UserID);
-
-                Session["FullName"] = user.FullName;
-                TempData["Message"] = "Cập nhật thông tin thành công!";
-                return RedirectToAction("Profile");
             }
-
-            return View(user);
         }
 
-        // Đổi mật khẩu
-        public ActionResult ChangePassword()
+        /// <summary>
+        /// Kiểm tra email đã tồn tại
+        /// </summary>
+        private bool IsEmailExists(string email)
         {
-            if (Session["UserID"] == null)
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                return RedirectToAction("Login");
+                string query = "SELECT COUNT(*) FROM Users WHERE Email = @Email";
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Email", email);
+                    conn.Open();
+                    int count = (int)cmd.ExecuteScalar();
+                    return count > 0;
+                }
             }
-            return View();
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult ChangePassword(string oldPassword, string newPassword, string confirmPassword)
+        /// <summary>
+        /// Tạo user mới
+        /// </summary>
+        private int CreateUser(RegisterViewModel model)
         {
-            if (Session["UserID"] == null)
+            int userId = 0;
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                return RedirectToAction("Login");
+                string query = @"
+                    INSERT INTO Users (Username, Password, Email, FullName, PhoneNumber, Address, RoleID, IsActive, CreatedDate)
+                    VALUES (@Username, @Password, @Email, @FullName, @PhoneNumber, @Address, 4, 1, GETDATE());
+                    SELECT CAST(SCOPE_IDENTITY() AS INT);";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Username", model.Username);
+                    
+                    // TODO: Hash password trước khi lưu
+                    cmd.Parameters.AddWithValue("@Password", model.Password);
+                    
+                    cmd.Parameters.AddWithValue("@Email", model.Email);
+                    cmd.Parameters.AddWithValue("@FullName", model.FullName);
+                    cmd.Parameters.AddWithValue("@PhoneNumber", model.PhoneNumber);
+                    cmd.Parameters.AddWithValue("@Address", (object)model.Address ?? DBNull.Value);
+
+                    conn.Open();
+                    userId = (int)cmd.ExecuteScalar();
+                }
             }
 
-            int userId = (int)Session["UserID"];
-            var user = db.Users.Find(userId);
-
-            if (user == null)
-            {
-                return HttpNotFound();
-            }
-
-            // Kiểm tra mật khẩu cũ
-            string hashedOldPassword = HashPassword(oldPassword);
-            if (user.Password != hashedOldPassword && user.Password != oldPassword)
-            {
-                ModelState.AddModelError("", "Mật khẩu cũ không đúng");
-                return View();
-            }
-
-            // Kiểm tra mật khẩu mới
-            if (newPassword != confirmPassword)
-            {
-                ModelState.AddModelError("", "Mật khẩu mới không khớp");
-                return View();
-            }
-
-            if (newPassword.Length < 6)
-            {
-                ModelState.AddModelError("", "Mật khẩu phải có ít nhất 6 ký tự");
-                return View();
-            }
-
-            // Cập nhật mật khẩu
-            user.Password = HashPassword(newPassword);
-            db.SaveChanges();
-
-            // Log activity
-            LogActivity(userId, "Đổi mật khẩu", "Users", userId);
-
-            TempData["Message"] = "Đổi mật khẩu thành công!";
-            return RedirectToAction("Profile");
+            return userId;
         }
 
-        // Hàm mã hóa mật khẩu (SHA256)
-        private string HashPassword(string password)
+        /// <summary>
+        /// Lưu thông tin user vào Session
+        /// </summary>
+        private void SetUserSession(User user)
         {
-            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            Session["UserID"] = user.UserID;
+            Session["Username"] = user.Username;
+            Session["FullName"] = user.FullName;
+            Session["Email"] = user.Email;
+            Session["RoleID"] = user.RoleID;
+            Session["RoleName"] = user.RoleName;
+        }
+
+        /// <summary>
+        /// Cập nhật thời gian đăng nhập cuối
+        /// </summary>
+        private void UpdateLastLogin(int userId)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                var hashedBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-                return BitConverter.ToString(hashedBytes).Replace("-", "").ToLower();
+                string query = "UPDATE Users SET LastLogin = GETDATE() WHERE UserID = @UserID";
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@UserID", userId);
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
             }
         }
 
-        // Log hoạt động
-        private void LogActivity(int userId, string action, string tableName, int? recordId)
+        /// <summary>
+        /// Ghi log hoạt động
+        /// </summary>
+        private void LogActivity(int userId, string action)
         {
             try
             {
-                var log = new ActivityLog
+                using (SqlConnection conn = new SqlConnection(connectionString))
                 {
-                    UserID = userId,
-                    Action = action,
-                    TableName = tableName,
-                    RecordID = recordId,
-                    IPAddress = Request.UserHostAddress,
-                    CreatedDate = DateTime.Now
-                };
+                    string query = @"
+                        INSERT INTO ActivityLogs (UserID, Action, IPAddress, CreatedDate)
+                        VALUES (@UserID, @Action, @IPAddress, GETDATE())";
 
-                db.ActivityLogs.Add(log);
-                db.SaveChanges();
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@UserID", userId);
+                        cmd.Parameters.AddWithValue("@Action", action);
+                        cmd.Parameters.AddWithValue("@IPAddress", GetUserIP());
+
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                // Không ném exception nếu log thất bại
+                System.Diagnostics.Debug.WriteLine("Log Activity Error: " + ex.Message);
             }
         }
 
-        protected override void Dispose(bool disposing)
+        /// <summary>
+        /// Lấy IP người dùng
+        /// </summary>
+        private string GetUserIP()
         {
-            if (disposing)
+            string ip = Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+            if (string.IsNullOrEmpty(ip))
             {
-                db.Dispose();
+                ip = Request.ServerVariables["REMOTE_ADDR"];
             }
-            base.Dispose(disposing);
+            return ip ?? "Unknown";
+        }
+
+        /// <summary>
+        /// Chuyển hướng về trang chủ dựa trên vai trò
+        /// </summary>
+        private ActionResult RedirectToHome()
+        {
+            if (Session["RoleName"] != null)
+            {
+                string roleName = Session["RoleName"].ToString();
+
+                switch (roleName)
+                {
+                    case "Admin":
+                    case "Manager":
+                        return RedirectToAction("Index", "Admin");
+                    case "Staff":
+                        return RedirectToAction("Orders", "Admin");
+                    default:
+                        return RedirectToAction("Index", "Home");
+                }
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        /// <summary>
+        /// Ghi log lỗi
+        /// </summary>
+        private void LogError(Exception ex)
+        {
+            try
+            {
+                string logPath = Server.MapPath("~/App_Data/ErrorLog.txt");
+                string logMessage = $"[{DateTime.Now}] {ex.Message}\n{ex.StackTrace}\n\n";
+                System.IO.File.AppendAllText(logPath, logMessage);
+            }
+            catch
+            {
+                // Ignore logging errors
+            }
         }
     }
 }
