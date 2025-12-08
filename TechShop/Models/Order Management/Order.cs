@@ -27,20 +27,18 @@ namespace TechShop.Models
         public int StatusID { get; set; }
 
         [Required]
-        [Column(TypeName = "decimal(18,2)")]
         [Display(Name = "Tổng tiền")]
         public decimal TotalAmount { get; set; }
 
-        [Column(TypeName = "decimal(18,2)")]
         [Display(Name = "Giảm giá")]
         public decimal DiscountAmount { get; set; }
 
-        [Column(TypeName = "decimal(18,2)")]
+
         [Display(Name = "Phí vận chuyển")]
         public decimal ShippingFee { get; set; }
 
         [Required]
-        [Column(TypeName = "decimal(18,2)")]
+
         [Display(Name = "Tổng thanh toán")]
         public decimal FinalAmount { get; set; }
 

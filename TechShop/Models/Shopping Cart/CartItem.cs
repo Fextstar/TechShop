@@ -27,7 +27,7 @@ namespace TechShop.Models
         public int Quantity { get; set; }
 
         [Required]
-        [Column(TypeName = "decimal(18,2)")]
+    
         [Display(Name = "Giá")]
         public decimal Price { get; set; }
 

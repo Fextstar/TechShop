@@ -28,15 +28,15 @@ namespace TechShop.Models
         public string DiscountType { get; set; } // 'Percentage' hoặc 'FixedAmount'
 
         [Required]
-        [Column(TypeName = "decimal(18,2)")]
+
         [Display(Name = "Giá trị giảm")]
         public decimal DiscountValue { get; set; }
 
-        [Column(TypeName = "decimal(18,2)")]
+
         [Display(Name = "Giá trị đơn tối thiểu")]
         public decimal MinOrderAmount { get; set; }
 
-        [Column(TypeName = "decimal(18,2)")]
+
         [Display(Name = "Giảm tối đa")]
         public decimal? MaxDiscountAmount { get; set; }
 

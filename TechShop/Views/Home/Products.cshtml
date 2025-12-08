@@ -19,7 +19,7 @@
                         </a>
                         @foreach (var category in ViewBag.Categories)
                         {
-                            <a href="@Url.Action("Products", "Home", new { categoryId = category.CategoryId })"
+                            <a href="@Url.Action("Products", "Home", new { categoryID = category.CategoryID })"
                                class="list-group-item list-group-item-action @(ViewBag.CurrentCategory == category.CategoryName ? "active" : "")">
                                 @category.CategoryName
                             </a>

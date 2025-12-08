@@ -26,7 +26,7 @@ namespace TechShop.Models
         public int OrderID { get; set; }
 
         [Required]
-        [Column(TypeName = "decimal(18,2)")]
+
         [Display(Name = "Số tiền giảm")]
         public decimal DiscountAmount { get; set; }
 

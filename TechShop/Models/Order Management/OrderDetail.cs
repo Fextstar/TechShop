@@ -32,16 +32,16 @@ namespace TechShop.Models
         public int Quantity { get; set; }
 
         [Required]
-        [Column(TypeName = "decimal(18,2)")]
+
         [Display(Name = "Đơn giá")]
         public decimal UnitPrice { get; set; }
 
-        [Column(TypeName = "decimal(18,2)")]
+
         [Display(Name = "Giá giảm")]
         public decimal? DiscountPrice { get; set; }
 
         [Required]
-        [Column(TypeName = "decimal(18,2)")]
+
         [Display(Name = "Tổng giá")]
         public decimal TotalPrice { get; set; }
 
