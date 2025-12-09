@@ -140,6 +140,7 @@
     <Compile Include="Controllers\CheckoutController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\OrderController.cs" />
+    <Compile Include="Controllers\PostsController.cs" />
     <Compile Include="Controllers\ProductController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -163,6 +164,7 @@
     <Compile Include="Models\Product Management\ProductReview.cs" />
     <Compile Include="Models\User &amp; Authentication\AdminModel.cs" />
     <Compile Include="Models\User &amp; Authentication\LoginViewModel.cs" />
+    <Compile Include="Models\User &amp; Authentication\PasswordHelper.cs" />
     <Compile Include="Models\User &amp; Authentication\Role.cs" />
     <Compile Include="Models\Shopping Cart\ShoppingCart.cs" />
     <Compile Include="Models\System\SiteSetting.cs" />
@@ -188,6 +190,7 @@
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
     <Content Include="Content\PagedList.css" />
+    <Content Include="Content\Uploads\Posts\welcome.jpg" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
@@ -234,6 +237,12 @@
     <Content Include="Views\Admin\Index.cshtml" />
     <Content Include="Views\Admin\Products.cshtml" />
     <Content Include="Views\Product\Index.cshtml" />
+    <Content Include="Views\Posts\Index.cshtml" />
+    <Content Include="Views\Posts\Detail.cshtml" />
+    <Content Include="Views\Admin\ProductCreate.cshtml" />
+    <Content Include="Views\Admin\ProductEdit.cshtml" />
+    <Content Include="Views\Admin\Orders.cshtml" />
+    <Content Include="Views\Admin\Users.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -241,7 +250,6 @@
     <Folder Include="Content\Images\" />
     <Folder Include="Content\Uploads\Brands\" />
     <Folder Include="Content\Uploads\Categories\" />
-    <Folder Include="Content\Uploads\Posts\" />
     <Folder Include="Content\Uploads\Products\" />
     <Folder Include="Content\Uploads\Users\" />
     <Folder Include="Views\Checkout\" />

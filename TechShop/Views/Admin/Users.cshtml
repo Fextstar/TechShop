@@ -1,0 +1,85 @@
+﻿@model List<TechShop.Models.User>
+
+@{
+    ViewBag.Title = "Quản lý người dùng";
+}
+
+<div class="main-content">
+    <h2 class="page-title"><i class="fas fa-users"></i> Quản lý người dùng</h2>
+
+    <div class="filter-section">
+        @using (Html.BeginForm("Users", "Admin", FormMethod.Get))
+        {
+            <div class="filter-row">
+                <input name="search" class="form-control" placeholder="Tên, email, username..." />
+
+                <select name="roleId" class="form-control">
+                    <option value="">Tất cả quyền</option>
+                    @foreach (var r in ViewBag.Roles)
+                    {
+                        <option value="@r.RoleID">@r.RoleName</option>
+                    }
+                </select>
+
+                <button class="btn-primary">
+                    <i class="fas fa-filter"></i> Lọc
+                </button>
+            </div>
+        }
+    </div>
+
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Tài khoản</th>
+                    <th>Email</th>
+                    <th>Quyền</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var u in Model)
+                {
+                    <tr>
+                        <td>@u.Username</td>
+                        <td>@u.Email</td>
+                        <td>@u.Role.RoleName</td>
+                        <td>
+                            @if (u.IsActive)
+                            {
+                                <span class="badge badge-success">Hoạt động</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-danger">Khóa</span>
+                            }
+                        </td>
+                        <td>
+                            <button class="btn-warning btn-sm" onclick="toggleUser(@u.UserID)">
+                                <i class="fas fa-exchange-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function toggleUser(id) {
+        fetch('@Url.Action("ToggleUserStatus", "Admin")', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id })
+        })
+        .then(r => r.json())
+        .then(d => {
+            alert("Cập nhật thành công!");
+            location.reload();
+        });
+    }
+</script>

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Web;
 
 namespace TechShop.Models
 {
@@ -27,28 +23,33 @@ namespace TechShop.Models
         public string ProductName { get; set; }
 
         [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "Số lượng phải lớn hơn 0")]
         [Display(Name = "Số lượng")]
         public int Quantity { get; set; }
 
         [Required]
-
         [Display(Name = "Đơn giá")]
         public decimal UnitPrice { get; set; }
-
 
         [Display(Name = "Giá giảm")]
         public decimal? DiscountPrice { get; set; }
 
         [Required]
-
-        [Display(Name = "Tổng giá")]
+        [Display(Name = "Thành tiền")]
         public decimal TotalPrice { get; set; }
 
-        // Navigation properties
+        // ==========================================
+        // NAVIGATION PROPERTIES
+        // ==========================================
+
+        /// <summary>
+        /// Đơn hàng chứa chi tiết này
+        /// </summary>
         [ForeignKey("OrderID")]
         public virtual Order Order { get; set; }
 
+        /// <summary>
+        /// Sản phẩm trong chi tiết đơn hàng
+        /// </summary>
         [ForeignKey("ProductID")]
         public virtual Product Product { get; set; }
     }

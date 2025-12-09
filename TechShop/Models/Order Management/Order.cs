@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Web;
 
 namespace TechShop.Models
 {
@@ -33,12 +31,10 @@ namespace TechShop.Models
         [Display(Name = "Giảm giá")]
         public decimal DiscountAmount { get; set; }
 
-
         [Display(Name = "Phí vận chuyển")]
         public decimal ShippingFee { get; set; }
 
         [Required]
-
         [Display(Name = "Tổng thanh toán")]
         public decimal FinalAmount { get; set; }
 
@@ -57,12 +53,10 @@ namespace TechShop.Models
 
         [Required]
         [StringLength(20)]
-        [Phone]
         [Display(Name = "Số điện thoại")]
         public string CustomerPhone { get; set; }
 
         [StringLength(100)]
-        [EmailAddress]
         [Display(Name = "Email")]
         public string CustomerEmail { get; set; }
 
@@ -75,10 +69,10 @@ namespace TechShop.Models
         [Display(Name = "Ghi chú")]
         public string Note { get; set; }
 
-        [Display(Name = "Ngày đặt")]
+        [Display(Name = "Ngày đặt hàng")]
         public DateTime OrderDate { get; set; }
 
-        [Display(Name = "Ngày giao")]
+        [Display(Name = "Ngày giao hàng")]
         public DateTime? ShippedDate { get; set; }
 
         [Display(Name = "Ngày hoàn thành")]
@@ -91,23 +85,36 @@ namespace TechShop.Models
         [Display(Name = "Lý do hủy")]
         public string CancelReason { get; set; }
 
-        // Navigation properties
+        // ==========================================
+        // NAVIGATION PROPERTIES
+        // ==========================================
+
+        /// <summary>
+        /// User đặt hàng
+        /// </summary>
         [ForeignKey("UserID")]
         public virtual User User { get; set; }
 
+        /// <summary>
+        /// Trạng thái đơn hàng
+        /// QUAN TRỌNG: Phải khớp với tên bảng OrderStatus
+        /// </summary>
         [ForeignKey("StatusID")]
         public virtual OrderStatus Status { get; set; }
 
+        /// <summary>
+        /// Danh sách chi tiết đơn hàng
+        /// </summary>
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
 
-        // Computed properties
-        [NotMapped]
-        public int TotalItems
+        /// <summary>
+        /// Constructor - Khởi tạo collection
+        /// </summary>
+        public Order()
         {
-            get
-            {
-                return OrderDetails?.Sum(d => d.Quantity) ?? 0;
-            }
+            OrderDetails = new HashSet<OrderDetail>();
+            OrderDate = DateTime.Now;
+            PaymentStatus = "Chưa thanh toán";
         }
     }
 }

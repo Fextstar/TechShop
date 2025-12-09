@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using TechShop.Models;
+using TechShop.Models.User___Authentication;
 
 namespace TechShop.Controllers
 {
@@ -23,53 +24,29 @@ namespace TechShop.Controllers
         public ActionResult Index()
         {
             if (!IsAdmin())
-            {
                 return RedirectToAction("Login", "Account");
-            }
 
-            // Thống kê tổng quan
-            ViewBag.TotalProducts = db.Products.Count(p => p.IsActive);
-            ViewBag.TotalOrders = db.Orders.Count();
-            ViewBag.TotalUsers = db.Users.Count(u => u.IsActive);
-            ViewBag.TotalRevenue = db.Orders
-                .Where(o => o.Status.StatusName == "Đã giao")
-                .Sum(o => (decimal?)o.FinalAmount) ?? 0;
-
-            // Đơn hàng mới
-            ViewBag.PendingOrders = db.Orders
-                .Include(o => o.User)
-                .Include(o => o.Status)
-                .Where(o => o.Status.StatusName == "Chờ xác nhận")
-                .OrderByDescending(o => o.OrderDate)
-                .Take(10)
-                .ToList();
-
-            // Sản phẩm sắp hết hàng
-            ViewBag.LowStockProducts = db.Products
-                .Where(p => p.StockQuantity <= p.MinStockLevel && p.IsActive)
-                .OrderBy(p => p.StockQuantity)
-                .Take(10)
-                .ToList();
-
-            // Doanh thu 7 ngày gần nhất
-            var last7Days = Enumerable.Range(0, 7)
-                .Select(i => DateTime.Today.AddDays(-i))
-                .Reverse()
-                .ToList();
-
-            var revenueData = last7Days.Select(date => new
+            var model = new DashboardViewModel
             {
-                Date = date.ToString("dd/MM"),
-                Revenue = db.Orders
-                    .Where(o => DbFunctions.TruncateTime(o.OrderDate) == date
-                           && o.Status.StatusName == "Đã giao")
-                    .Sum(o => (decimal?)o.FinalAmount) ?? 0
-            }).ToList();
+                TotalProducts = db.Products.Count(p => p.IsActive),
+                TotalOrders = db.Orders.Count(),
+                TotalCustomers = db.Users.Count(u => u.IsActive),
+                MonthlyRevenue = db.Orders
+                    .Where(o => o.Status.StatusName == "Đã giao"
+                             && o.DeliveredDate.Value.Month == DateTime.Now.Month)
+                    .Sum(o => (decimal?)o.FinalAmount) ?? 0,
 
-            ViewBag.RevenueData = revenueData;
+                PendingOrders = db.Orders
+                    .Count(o => o.Status.StatusName == "Chờ xác nhận"),
 
-            return View();
+                LowStockProducts = db.Products
+                    .Count(p => p.StockQuantity <= p.MinStockLevel && p.IsActive)
+            };
+
+            return View(model);
         }
+
+
 
         // ============ QUẢN LÝ SẢN PHẨM ============
 

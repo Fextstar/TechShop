@@ -1,4 +1,4 @@
-﻿@model TechShop.Models.DashboardViewModel
+﻿@model TechShop.Models.User___Authentication.DashboardViewModel
 
 @{
     ViewBag.Title = "Dashboard - Quản trị";
@@ -51,9 +51,9 @@
             gap: 10px;
         }
 
-        .logo i {
-            font-size: 28px;
-        }
+            .logo i {
+                font-size: 28px;
+            }
 
         .sidebar-menu {
             padding: 20px 0;
@@ -70,15 +70,15 @@
             border-left: 3px solid transparent;
         }
 
-        .menu-item:hover, .menu-item.active {
-            background: rgba(255, 255, 255, 0.1);
-            border-left-color: white;
-        }
+            .menu-item:hover, .menu-item.active {
+                background: rgba(255, 255, 255, 0.1);
+                border-left-color: white;
+            }
 
-        .menu-item i {
-            width: 20px;
-            text-align: center;
-        }
+            .menu-item i {
+                width: 20px;
+                text-align: center;
+            }
 
         /* Main Content */
         .main-content {
@@ -142,10 +142,10 @@
             transition: transform 0.3s, box-shadow 0.3s;
         }
 
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-        }
+            .stat-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            }
 
         .stat-info h3 {
             color: #7f8c8d;
@@ -171,12 +171,29 @@
             color: white;
         }
 
-        .stat-icon.blue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .stat-icon.green { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
-        .stat-icon.orange { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-        .stat-icon.purple { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-        .stat-icon.red { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-        .stat-icon.teal { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+            .stat-icon.blue {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+
+            .stat-icon.green {
+                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            }
+
+            .stat-icon.orange {
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            }
+
+            .stat-icon.purple {
+                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            }
+
+            .stat-icon.red {
+                background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            }
+
+            .stat-icon.teal {
+                background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+            }
 
         /* Charts */
         .charts-grid {
@@ -215,23 +232,23 @@
             border-collapse: collapse;
         }
 
-        table th {
-            background: #f5f6fa;
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-            color: #2c3e50;
-            border-bottom: 2px solid #e0e0e0;
-        }
+            table th {
+                background: #f5f6fa;
+                padding: 12px;
+                text-align: left;
+                font-weight: 600;
+                color: #2c3e50;
+                border-bottom: 2px solid #e0e0e0;
+            }
 
-        table td {
-            padding: 12px;
-            border-bottom: 1px solid #f5f6fa;
-        }
+            table td {
+                padding: 12px;
+                border-bottom: 1px solid #f5f6fa;
+            }
 
-        table tr:hover {
-            background: #f9f9f9;
-        }
+            table tr:hover {
+                background: #f9f9f9;
+            }
 
         .badge {
             padding: 5px 12px;
@@ -240,10 +257,25 @@
             font-weight: 600;
         }
 
-        .badge-warning { background: #fff3cd; color: #856404; }
-        .badge-success { background: #d4edda; color: #155724; }
-        .badge-danger { background: #f8d7da; color: #721c24; }
-        .badge-info { background: #d1ecf1; color: #0c5460; }
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
 
         .btn {
             padding: 8px 16px;
@@ -260,10 +292,10 @@
             color: white;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-        }
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            }
 
         /* Alert */
         .alert {
@@ -394,7 +426,7 @@
             <div class="stat-card">
                 <div class="stat-info">
                     <h3>Tổng sản phẩm</h3>
-                    <div class="number">@Model.TotalProducts</div>
+                    <div class="number">@((Model?.TotalProducts ?? 0).ToString("N0"))</div>
                 </div>
                 <div class="stat-icon blue">
                     <i class="fas fa-box"></i>
@@ -404,7 +436,7 @@
             <div class="stat-card">
                 <div class="stat-info">
                     <h3>Tổng đơn hàng</h3>
-                    <div class="number">@Model.TotalOrders</div>
+                    <div class="number">@((Model?.TotalOrders ?? 0).ToString("N0"))</div>
                 </div>
                 <div class="stat-icon green">
                     <i class="fas fa-shopping-cart"></i>
@@ -414,7 +446,7 @@
             <div class="stat-card">
                 <div class="stat-info">
                     <h3>Doanh thu tháng</h3>
-                    <div class="number">@Model.MonthlyRevenue.ToString("N0") đ</div>
+                    <div class="number">@((Model?.MonthlyRevenue ?? 0).ToString("N0")) đ</div>
                 </div>
                 <div class="stat-icon orange">
                     <i class="fas fa-dollar-sign"></i>
@@ -424,7 +456,7 @@
             <div class="stat-card">
                 <div class="stat-info">
                     <h3>Khách hàng</h3>
-                    <div class="number">@Model.TotalCustomers</div>
+                    <div class="number">@((Model?.TotalCustomers ?? 0).ToString("N0"))</div>
                 </div>
                 <div class="stat-icon purple">
                     <i class="fas fa-users"></i>
@@ -434,7 +466,7 @@
             <div class="stat-card">
                 <div class="stat-info">
                     <h3>Đơn chờ xử lý</h3>
-                    <div class="number">@Model.PendingOrders</div>
+                    <div class="number">@((Model?.PendingOrders ?? 0).ToString("N0"))</div>
                 </div>
                 <div class="stat-icon red">
                     <i class="fas fa-clock"></i>
@@ -444,13 +476,14 @@
             <div class="stat-card">
                 <div class="stat-info">
                     <h3>Sản phẩm sắp hết</h3>
-                    <div class="number">@Model.LowStockProducts</div>
+                    <div class="number">@((Model?.LowStockProducts ?? 0).ToString("N0"))</div>
                 </div>
                 <div class="stat-icon teal">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
             </div>
         </div>
+
 
         <!-- Charts -->
         <div class="charts-grid">
@@ -528,7 +561,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Revenue Chart
+        // Revenue Chart (Fixed size)
         const revenueCtx = document.getElementById('revenueChart').getContext('2d');
         new Chart(revenueCtx, {
             type: 'line',
@@ -538,21 +571,23 @@
                     label: 'Doanh thu (triệu đồng)',
                     data: [12, 19, 15, 25, 22, 30, 28],
                     borderColor: '#667eea',
-                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    backgroundColor: 'rgba(102, 126, 234, 0.15)',
                     tension: 0.4,
                     fill: true
                 }]
             },
             options: {
-                responsive: true,
+                responsive: false,              // << Fix không cho dãn vô hạn
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
                 scales: {
                     y: { beginAtZero: true }
+                },
+                plugins: {
+                    legend: { display: false }
                 }
             }
+        });
+
         });
 
         // Products Chart

@@ -76,6 +76,10 @@ namespace TechShop.Models
         [Display(Name = "Ngày cập nhật")]
         public DateTime? UpdatedDate { get; set; }
 
+        [Display(Name = "Ảnh đại diện")]
+        [StringLength(500)]
+        public string ImageURL { get; set; }
+
         // Navigation properties
         [ForeignKey("CategoryID")]
         public virtual Category Category { get; set; }

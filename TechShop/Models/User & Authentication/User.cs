@@ -49,10 +49,6 @@ namespace TechShop.Models
         [Display(Name = "Vai trò")]
         public int RoleID { get; set; }
 
-        [StringLength(50)]
-        [Display(Name = "Tên vai trò")]
-        public string RoleName { get; set; }
-
         [Display(Name = "Trạng thái")]
         public bool IsActive { get; set; }
 
