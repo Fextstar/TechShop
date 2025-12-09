@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Web;
 
 namespace TechShop.Models
 {
@@ -31,8 +28,25 @@ namespace TechShop.Models
         [Display(Name = "Ngày tạo")]
         public DateTime CreatedDate { get; set; }
 
-        // Navigation properties
+        // ==========================================
+        // NAVIGATION PROPERTIES
+        // ==========================================
+
+        /// <summary>
+        /// Sản phẩm chứa hình ảnh này
+        /// </summary>
         [ForeignKey("ProductID")]
         public virtual Product Product { get; set; }
+
+        // ==========================================
+        // CONSTRUCTOR
+        // ==========================================
+
+        public ProductImage()
+        {
+            CreatedDate = DateTime.Now;
+            IsPrimary = false;
+            DisplayOrder = 0;
+        }
     }
 }

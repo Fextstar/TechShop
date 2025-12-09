@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using System.Web;
 
 namespace TechShop.Models
 {
@@ -41,18 +40,20 @@ namespace TechShop.Models
         [DataType(DataType.MultilineText)]
         public string Specifications { get; set; }
 
-        [Required(ErrorMessage = "Giá sản phẩm không được để trống")]
-        [Display(Name = "Giá")]
+        [Required(ErrorMessage = "Giá không được để trống")]
+        [Display(Name = "Giá gốc")]
         [Range(0, double.MaxValue, ErrorMessage = "Giá phải lớn hơn 0")]
         public decimal Price { get; set; }
 
-        [Display(Name = "Giá giảm")]
+        [Display(Name = "Giá khuyến mãi")]
+        [Range(0, double.MaxValue, ErrorMessage = "Giá khuyến mãi phải lớn hơn 0")]
         public decimal? DiscountPrice { get; set; }
 
-        [Display(Name = "Số lượng tồn")]
+        [Display(Name = "Số lượng tồn kho")]
+        [Range(0, int.MaxValue, ErrorMessage = "Số lượng không được âm")]
         public int StockQuantity { get; set; }
 
-        [Display(Name = "Tồn kho tối thiểu")]
+        [Display(Name = "Mức tồn kho tối thiểu")]
         public int MinStockLevel { get; set; }
 
         [Display(Name = "Trọng lượng (kg)")]
@@ -61,10 +62,10 @@ namespace TechShop.Models
         [Display(Name = "Bảo hành (tháng)")]
         public int Warranty { get; set; }
 
-        [Display(Name = "Kích hoạt")]
+        [Display(Name = "Hoạt động")]
         public bool IsActive { get; set; }
 
-        [Display(Name = "Nổi bật")]
+        [Display(Name = "Sản phẩm nổi bật")]
         public bool IsFeatured { get; set; }
 
         [Display(Name = "Lượt xem")]
@@ -76,11 +77,10 @@ namespace TechShop.Models
         [Display(Name = "Ngày cập nhật")]
         public DateTime? UpdatedDate { get; set; }
 
-        [Display(Name = "Ảnh đại diện")]
-        [StringLength(500)]
-        public string ImageURL { get; set; }
+        // ==========================================
+        // NAVIGATION PROPERTIES
+        // ==========================================
 
-        // Navigation properties
         [ForeignKey("CategoryID")]
         public virtual Category Category { get; set; }
 
@@ -90,48 +90,162 @@ namespace TechShop.Models
         [ForeignKey("SupplierID")]
         public virtual Supplier Supplier { get; set; }
 
+        /// <summary>
+        /// Danh sách hình ảnh của sản phẩm
+        /// </summary>
         public virtual ICollection<ProductImage> ProductImages { get; set; }
+
+        /// <summary>
+        /// Danh sách đánh giá sản phẩm
+        /// </summary>
         public virtual ICollection<ProductReview> ProductReviews { get; set; }
+
+        /// <summary>
+        /// Danh sách chi tiết đơn hàng
+        /// </summary>
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
+
+        /// <summary>
+        /// Danh sách trong giỏ hàng
+        /// </summary>
         public virtual ICollection<CartItem> CartItems { get; set; }
 
-        // Computed property
+        // ==========================================
+        // COMPUTED PROPERTIES (NOT MAPPED)
+        // ==========================================
+
+        /// <summary>
+        /// Lấy URL ảnh chính của sản phẩm
+        /// </summary>
         [NotMapped]
         public string PrimaryImageUrl
         {
             get
             {
-                var primaryImage = ProductImages?.FirstOrDefault(i => i.IsPrimary);
-                return primaryImage?.ImageURL ?? "/Content/Images/no-image.jpg";
+                if (ProductImages != null && ProductImages.Any())
+                {
+                    var primaryImage = ProductImages.FirstOrDefault(img => img.IsPrimary);
+                    if (primaryImage != null)
+                        return primaryImage.ImageURL;
+
+                    // Nếu không có ảnh primary, lấy ảnh đầu tiên
+                    var firstImage = ProductImages.OrderBy(img => img.DisplayOrder).FirstOrDefault();
+                    if (firstImage != null)
+                        return firstImage.ImageURL;
+                }
+
+                // Trả về ảnh mặc định nếu không có ảnh nào
+                return "/Content/images/no-image.png";
             }
         }
 
-        [NotMapped]
-        public decimal DisplayPrice
-        {
-            get
-            {
-                return DiscountPrice ?? Price;
-            }
-        }
-
+        /// <summary>
+        /// Kiểm tra có giảm giá không
+        /// </summary>
         [NotMapped]
         public bool HasDiscount
         {
             get
             {
-                return DiscountPrice.HasValue && DiscountPrice.Value < Price;
+                return DiscountPrice.HasValue && DiscountPrice.Value > 0 && DiscountPrice.Value < Price;
             }
         }
 
+        /// <summary>
+        /// Giá hiển thị (ưu tiên giá khuyến mãi nếu có)
+        /// </summary>
         [NotMapped]
-        public decimal DiscountPercentage
+        public decimal DisplayPrice
         {
             get
             {
-                if (!HasDiscount) return 0;
-                return Math.Round((Price - DiscountPrice.Value) / Price * 100, 0);
+                return HasDiscount ? DiscountPrice.Value : Price;
             }
+        }
+
+        /// <summary>
+        /// Phần trăm giảm giá
+        /// </summary>
+        [NotMapped]
+        public int DiscountPercentage
+        {
+            get
+            {
+                if (HasDiscount)
+                {
+                    return (int)Math.Round(((Price - DiscountPrice.Value) / Price) * 100);
+                }
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Trạng thái tồn kho
+        /// </summary>
+        [NotMapped]
+        public string StockStatus
+        {
+            get
+            {
+                if (StockQuantity <= 0)
+                    return "Hết hàng";
+                else if (StockQuantity <= MinStockLevel)
+                    return "Sắp hết";
+                else
+                    return "Còn hàng";
+            }
+        }
+
+        /// <summary>
+        /// Đánh giá trung bình
+        /// </summary>
+        [NotMapped]
+        public double AverageRating
+        {
+            get
+            {
+                if (ProductReviews != null && ProductReviews.Any(r => r.IsApproved))
+                {
+                    return ProductReviews.Where(r => r.IsApproved).Average(r => r.Rating);
+                }
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Số lượng đánh giá
+        /// </summary>
+        [NotMapped]
+        public int ReviewCount
+        {
+            get
+            {
+                if (ProductReviews != null)
+                {
+                    return ProductReviews.Count(r => r.IsApproved);
+                }
+                return 0;
+            }
+        }
+
+        // ==========================================
+        // CONSTRUCTOR
+        // ==========================================
+
+        public Product()
+        {
+            ProductImages = new HashSet<ProductImage>();
+            ProductReviews = new HashSet<ProductReview>();
+            OrderDetails = new HashSet<OrderDetail>();
+            CartItems = new HashSet<CartItem>();
+
+            CreatedDate = DateTime.Now;
+            IsActive = true;
+            IsFeatured = false;
+            ViewCount = 0;
+            StockQuantity = 0;
+            MinStockLevel = 5;
+            Warranty = 12;
         }
     }
 }

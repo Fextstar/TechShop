@@ -12,9 +12,223 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-
     <style>
-        /* --- giữ nguyên toàn bộ CSS của bạn --- */
+        /* ================================
+   SIDEBAR
+================================ */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            padding: 20px 0;
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+            .sidebar-header .logo {
+                font-size: 22px;
+                font-weight: bold;
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+                align-items: center;
+            }
+
+        .sidebar-menu {
+            margin-top: 15px;
+        }
+
+        .menu-item {
+            padding: 12px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            text-decoration: none;
+            font-size: 15px;
+            border-left: 3px solid transparent;
+        }
+
+            .menu-item:hover,
+            .menu-item.active {
+                background: rgba(255,255,255,0.12);
+                border-left-color: #fff;
+            }
+
+
+        /* ================================
+   MAIN CONTENT / TOPBAR
+================================ */
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+            background: #f5f6fa;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: #fff;
+            padding: 20px 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .page-title {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+
+        /* ================================
+   BUTTONS
+================================ */
+        .btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4caf50, #2e8b57);
+            color: #fff !important;
+        }
+
+        .btn-warning {
+            background: #ffca28;
+            color: #000;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+
+        /* ================================
+   FILTER AREA
+================================ */
+        .filter-section {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 20px;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-control {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            font-size: 14px;
+        }
+
+            .form-control:focus {
+                border-color: #667eea;
+                outline: none;
+            }
+
+
+        /* ================================
+   TABLE
+================================ */
+        .table-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead tr {
+            background: #f0f2f5;
+        }
+
+        th, td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+
+        /* ================================
+   BADGES
+================================ */
+        .badge {
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .badge-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+
+        /* ================================
+   STOCK STATUS
+================================ */
+        .stock-low {
+            background: #ffebee;
+            color: #d32f2f;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 6px;
+        }
+
+        .stock-ok {
+            background: #e8f5e9;
+            color: #388e3c;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 6px;
+        }
+
     </style>
 </head>
 <body>
@@ -72,9 +286,12 @@
             @using (Html.BeginForm("Products", "Admin", FormMethod.Get))
             {
                 <div class="filter-row">
+
                     <div class="form-group">
                         <label>Tìm kiếm</label>
-                        <input type="text" name="search" class="form-control" placeholder="Tên sản phẩm, SKU...">
+                        <input type="text" name="search" class="form-control"
+                               placeholder="Tên sản phẩm, SKU..."
+                               value="@Request["search"]" />
                     </div>
 
                     <div class="form-group">
@@ -83,7 +300,10 @@
                             <option value="">Tất cả danh mục</option>
                             @foreach (var c in ViewBag.Categories)
                             {
-                                <option value="@c.CategoryID">@c.CategoryName</option>
+                                <option value="@c.CategoryID"
+                                        @(Request["categoryId"] == c.CategoryID.ToString() ? "selected" : "")>
+                                    @c.CategoryName
+                                </option>
                             }
                         </select>
                     </div>
@@ -93,6 +313,7 @@
                             <i class="fas fa-search"></i> Lọc
                         </button>
                     </div>
+
                 </div>
             }
         </div>
@@ -121,16 +342,28 @@
                         {
                             <tr>
                                 <td><strong>@p.ProductID</strong></td>
-                                <td><strong>@p.ProductName</strong></td>
+
+                                <td>
+                                    <strong>@p.ProductName</strong><br />
+
+                                    @* ẢNH CHÍNH *@
+                                    <img src="@p.PrimaryImageUrl"
+                                         style="width:50px;height:50px;border-radius:5px;object-fit:cover;margin-top:5px;" />
+                                </td>
+
                                 <td>@p.SKU</td>
                                 <td>@p.Category?.CategoryName</td>
                                 <td>@p.Brand?.BrandName</td>
 
                                 <td>
-                                    @if (p.DiscountPrice != null)
+                                    @if (p.HasDiscount)
                                     {
-                                        <span style="text-decoration:line-through;color:#999">@p.Price.ToString("N0") đ</span><br />
-                                        <strong style="color:#dc3545">@p.DiscountPrice?.ToString("N0") đ</strong>
+                                        <span style="text-decoration:line-through;color:#999">
+                                            @p.Price.ToString("N0") đ
+                                        </span><br />
+                                        <strong style="color:#dc3545">
+                                            @p.DiscountPrice.Value.ToString("N0") đ
+                                        </strong>
                                     }
                                     else
                                     {
@@ -156,11 +389,12 @@
                                 </td>
 
                                 <td>
-                                    <a href="@Url.Action("EditProduct", "Admin", new { id = p.ProductID })" class="btn btn-warning btn-sm">
+                                    <a href="@Url.Action("EditProduct", "Admin", new { id = p.ProductID })"
+                                       class="btn btn-warning btn-sm">
                                         <i class="fas fa-edit"></i>
                                     </a>
 
-                                    <button class="btn btn-danger btn-sm" onclick="confirmDelete(@p.ProductID)">
+                                    <button class="btn btn-danger btn-sm" onclick="deleteProduct(@p.ProductID)">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
@@ -178,13 +412,23 @@
                 </tbody>
             </table>
         </div>
+
     </div>
 
     <script>
-        function confirmDelete(id) {
-            if (confirm("Bạn có chắc muốn xóa sản phẩm này?")) {
-                window.location.href = '/Admin/DeleteProduct/' + id;
-            }
+        function deleteProduct(id) {
+            if (!confirm("Bạn có chắc muốn xóa sản phẩm này?")) return;
+
+            fetch('/Admin/DeleteProduct', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.success) location.reload();
+                });
         }
     </script>
 

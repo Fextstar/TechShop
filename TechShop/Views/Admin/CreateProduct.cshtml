@@ -157,7 +157,7 @@
         </div>
 
         <div class="form-card">
-            @using (Html.BeginForm("ProductCreate", "Admin", FormMethod.Post))
+            @using (Html.BeginForm("CreateProduct", "Admin", FormMethod.Post))
             {
                 <div class="row">
                     <div class="col-6">
@@ -210,7 +210,7 @@
 
                         <div class="form-group">
                             <label>Ảnh (URL)</label>
-                            @Html.TextBoxFor(m => m.ImageURL, new { @class = "form-control" })
+                            <input type="text" name="ImageURL" class="form-control" />
                         </div>
 
                         <div class="form-group">

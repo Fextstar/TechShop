@@ -18,7 +18,7 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-    <!-- CUSTOM STYLE THEO LOGIN -->
+    <!-- CUSTOM STYLE -->
     <style>
         /* --- Navbar gradient hiện đại --- */
         .navbar-modern {
@@ -73,6 +73,27 @@
                     text-align: center;
                     margin-right: 8px;
                 }
+
+        /* Logout item cải tiến */
+        .logout-item {
+            border-left: 4px solid #ff4757;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+            .logout-item:hover {
+                background: #ffe6e6 !important;
+                color: #dc3545 !important;
+                transform: translateX(5px);
+            }
+
+            .logout-item i.fa-sign-out-alt {
+                transition: transform 0.3s ease;
+            }
+
+            .logout-item:hover i.fa-sign-out-alt {
+                transform: scale(1.1);
+            }
 
         /* Badge cho Admin/Manager */
         .admin-badge {
@@ -139,7 +160,6 @@
             margin-bottom: 20px;
         }
     </style>
-
 </head>
 
 <body>
@@ -219,7 +239,7 @@
                                     <i class="fas fa-receipt"></i> Đơn hàng của tôi
                                 </a>
 
-                                @* QUAN TRỌNG: Kiểm tra RoleID thay vì RoleName *@
+                                @* Chỉ Admin/Manager mới thấy Admin Panel *@
                                 @if (roleId == 1 || roleId == 2)
                                 {
                                     <div class="dropdown-divider"></div>
@@ -229,8 +249,10 @@
                                 }
 
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item text-danger" href="@Url.Action("Logout", "Account")">
+                                <!-- NÚT LOGOUT CẢI TIẾN -->
+                                <a class="dropdown-item text-danger logout-item" href="@Url.Action("Logout", "Account")" title="Đăng xuất an toàn">
                                     <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                                    <small class="d-block text-muted">(Thoát phiên làm việc)</small>
                                 </a>
                             </div>
                         </li>
@@ -249,7 +271,6 @@
                             </a>
                         </li>
                     }
-
                 </ul>
 
             </div>
@@ -306,10 +327,9 @@
     <footer>
         <div class="container">
             <div class="row">
-
                 <div class="col-md-4 mb-4">
                     <h5><i class="fas fa-laptop"></i> TechShop</h5>
-                    <p>Website kinh doanh thiết bị máy tính chất lượng cao – giao diện hiện đại tối giản.</p>
+                    <p>Website kinh doanh thiết bị máy tính chất lượng cao.</p>
                     <div class="social-links mt-3">
                         <a href="#" class="mr-3"><i class="fab fa-facebook fa-lg"></i></a>
                         <a href="#" class="mr-3"><i class="fab fa-youtube fa-lg"></i></a>
@@ -336,13 +356,11 @@
                         <i class="fas fa-clock"></i> <strong>Giờ làm việc:</strong> 8:00 - 22:00
                     </p>
                 </div>
-
             </div>
 
             <div class="copyright">
                 © @DateTime.Now.Year TechShop – Khóa luận tốt nghiệp – Nguyễn Hồng Phúc (MSSV: 2200010884)
             </div>
-
         </div>
     </footer>
 
@@ -359,6 +377,5 @@
     </script>
 
     @RenderSection("scripts", required: false)
-
 </body>
 </html>

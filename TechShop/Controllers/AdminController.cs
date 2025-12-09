@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Data.Entity;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 using TechShop.Models;
 using TechShop.Models.User___Authentication;
@@ -12,122 +11,156 @@ namespace TechShop.Controllers
     {
         private ApplicationDbContext db = new ApplicationDbContext();
 
-        // Kiểm tra quyền admin
-        private bool IsAdmin()
+        // ==========================================
+        // KIỂM TRA QUYỀN ADMIN/MANAGER
+        // ==========================================
+        protected override void OnActionExecuting(ActionExecutingContext filterContext)
         {
-            if (Session["UserID"] == null) return false;
-            var roleName = Session["RoleName"]?.ToString();
-            return roleName == "Admin" || roleName == "Manager";
+            // Kiểm tra đăng nhập
+            if (Session["UserID"] == null)
+            {
+                filterContext.Result = new RedirectToRouteResult(
+                    new System.Web.Routing.RouteValueDictionary(
+                        new { controller = "Account", action = "Login", returnUrl = Request.RawUrl }
+                    )
+                );
+                return;
+            }
+
+            // Kiểm tra quyền Admin hoặc Manager
+            int roleId = Session["RoleID"] != null ? (int)Session["RoleID"] : 0;
+            if (roleId != 1 && roleId != 2) // 1 = Admin, 2 = Manager
+            {
+                TempData["Error"] = "Bạn không có quyền truy cập trang này.";
+                filterContext.Result = new RedirectToRouteResult(
+                    new System.Web.Routing.RouteValueDictionary(
+                        new { controller = "Home", action = "Index" }
+                    )
+                );
+                return;
+            }
+
+            base.OnActionExecuting(filterContext);
         }
 
-        // Dashboard
+        // ==========================================
+        // DASHBOARD
+        // ==========================================
         public ActionResult Index()
         {
-            if (!IsAdmin())
-                return RedirectToAction("Login", "Account");
-
             var model = new DashboardViewModel
             {
-                TotalProducts = db.Products.Count(p => p.IsActive),
+                TotalProducts = db.Products.Count(),
                 TotalOrders = db.Orders.Count(),
-                TotalCustomers = db.Users.Count(u => u.IsActive),
+                TotalCustomers = db.Users.Count(),
                 MonthlyRevenue = db.Orders
-                    .Where(o => o.Status.StatusName == "Đã giao"
-                             && o.DeliveredDate.Value.Month == DateTime.Now.Month)
+                    .Where(o => o.Status.StatusName == "Đã giao")
                     .Sum(o => (decimal?)o.FinalAmount) ?? 0,
+                PendingOrders = db.Orders.Count(o => o.Status.StatusName == "Chờ xử lý"),
+                LowStockProducts = db.Products.Count(p => p.StockQuantity < p.MinStockLevel),
 
-                PendingOrders = db.Orders
-                    .Count(o => o.Status.StatusName == "Chờ xác nhận"),
-
-                LowStockProducts = db.Products
-                    .Count(p => p.StockQuantity <= p.MinStockLevel && p.IsActive)
+                RecentOrders = db.Orders
+                    .Include(o => o.Status)
+                    .Include(o => o.User)
+                    .OrderByDescending(o => o.OrderDate)
+                    .Take(10)
+                    .ToList()
             };
 
             return View(model);
         }
 
 
+        // ==========================================
+        // QUẢN LÝ SẢN PHẨM
+        // ==========================================
 
-        // ============ QUẢN LÝ SẢN PHẨM ============
-
-        // Danh sách sản phẩm
+        // GET: Admin/Products
         public ActionResult Products(string search, int? categoryId)
         {
-            if (!IsAdmin()) return RedirectToAction("Login", "Account");
-
             var products = db.Products
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
+                .Include(p => p.ProductImages)  // ← QUAN TRỌNG: Include ProductImages
                 .AsQueryable();
 
+            // Tìm kiếm
             if (!string.IsNullOrEmpty(search))
             {
-                products = products.Where(p => p.ProductName.Contains(search) || p.SKU.Contains(search));
+                search = search.ToLower();
+                products = products.Where(p =>
+                    p.ProductName.ToLower().Contains(search) ||
+                    p.SKU.ToLower().Contains(search)
+                );
             }
 
+            // Lọc theo danh mục
             if (categoryId.HasValue)
             {
                 products = products.Where(p => p.CategoryID == categoryId.Value);
             }
 
+            // Danh mục cho filter
             ViewBag.Categories = db.Categories.Where(c => c.IsActive).ToList();
+
             return View(products.OrderByDescending(p => p.CreatedDate).ToList());
         }
 
-        // Tạo sản phẩm mới
+        // GET: Admin/CreateProduct
         public ActionResult CreateProduct()
         {
-            if (!IsAdmin()) return RedirectToAction("Login", "Account");
-
             ViewBag.Categories = new SelectList(db.Categories.Where(c => c.IsActive), "CategoryID", "CategoryName");
             ViewBag.Brands = new SelectList(db.Brands.Where(b => b.IsActive), "BrandID", "BrandName");
             ViewBag.Suppliers = new SelectList(db.Suppliers.Where(s => s.IsActive), "SupplierID", "SupplierName");
 
-            return View(new Product());
+            return View();
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult CreateProduct(Product product, HttpPostedFileBase imageFile)
+        public ActionResult CreateProduct(Product model, string ImageURL)
         {
-            if (!IsAdmin()) return RedirectToAction("Login", "Account");
-
             if (ModelState.IsValid)
             {
-                product.CreatedDate = DateTime.Now;
-                product.IsActive = true;
-                product.ViewCount = 0;
-
-                db.Products.Add(product);
+                // Lưu sản phẩm trước
+                db.Products.Add(model);
                 db.SaveChanges();
 
-                // Upload hình ảnh
-                if (imageFile != null && imageFile.ContentLength > 0)
+                // Lưu ảnh
+                if (!string.IsNullOrEmpty(ImageURL))
                 {
-                    var fileName = product.ProductID + "_" + DateTime.Now.Ticks + System.IO.Path.GetExtension(imageFile.FileName);
-                    var path = Server.MapPath("~/Content/Uploads/Products/");
-
-                    if (!System.IO.Directory.Exists(path))
+                    var img = new ProductImage
                     {
-                        System.IO.Directory.CreateDirectory(path);
-                    }
-
-                    imageFile.SaveAs(path + fileName);
-
-                    var productImage = new ProductImage
-                    {
-                        ProductID = product.ProductID,
-                        ImageURL = "/Content/Uploads/Products/" + fileName,
-                        IsPrimary = true,
-                        DisplayOrder = 0,
-                        CreatedDate = DateTime.Now
+                        ProductID = model.ProductID,
+                        ImageURL = ImageURL,
+                        IsPrimary = true
                     };
-
-                    db.ProductImages.Add(productImage);
+                    db.ProductImages.Add(img);
                     db.SaveChanges();
                 }
 
-                TempData["Message"] = "Thêm sản phẩm thành công!";
+                return RedirectToAction("Products");
+            }
+
+            return View(model);
+        }
+
+
+        // GET: Admin/EditProduct/5
+        public ActionResult EditProduct(int? id)
+        {
+            if (id == null)
+            {
+                TempData["Error"] = "Không tìm thấy sản phẩm.";
+                return RedirectToAction("Products");
+            }
+
+            var product = db.Products
+                .Include(p => p.ProductImages)
+                .FirstOrDefault(p => p.ProductID == id);
+
+            if (product == null)
+            {
+                TempData["Error"] = "Sản phẩm không tồn tại.";
                 return RedirectToAction("Products");
             }
 
@@ -138,52 +171,84 @@ namespace TechShop.Controllers
             return View(product);
         }
 
-        // Sửa sản phẩm
-        public ActionResult EditProduct(int id)
-        {
-            if (!IsAdmin()) return RedirectToAction("Login", "Account");
-
-            var product = db.Products.Find(id);
-            if (product == null) return HttpNotFound();
-
-            ViewBag.Categories = new SelectList(db.Categories.Where(c => c.IsActive), "CategoryID", "CategoryName", product.CategoryID);
-            ViewBag.Brands = new SelectList(db.Brands.Where(b => b.IsActive), "BrandID", "BrandName", product.BrandID);
-            ViewBag.Suppliers = new SelectList(db.Suppliers.Where(s => s.IsActive), "SupplierID", "SupplierName", product.SupplierID);
-
-            return View(product);
-        }
-
+        // POST: Admin/EditProduct/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult EditProduct(Product product)
+        public ActionResult EditProduct(Product product, string[] imageUrls, bool[] isPrimary, int[] existingImageIds)
         {
-            if (!IsAdmin()) return RedirectToAction("Login", "Account");
-
             if (ModelState.IsValid)
             {
-                var existingProduct = db.Products.Find(product.ProductID);
-                if (existingProduct == null) return HttpNotFound();
+                try
+                {
+                    var existingProduct = db.Products.Find(product.ProductID);
+                    if (existingProduct == null)
+                    {
+                        TempData["Error"] = "Sản phẩm không tồn tại.";
+                        return RedirectToAction("Products");
+                    }
 
-                existingProduct.ProductName = product.ProductName;
-                existingProduct.CategoryID = product.CategoryID;
-                existingProduct.BrandID = product.BrandID;
-                existingProduct.SupplierID = product.SupplierID;
-                existingProduct.SKU = product.SKU;
-                existingProduct.Description = product.Description;
-                existingProduct.Specifications = product.Specifications;
-                existingProduct.Price = product.Price;
-                existingProduct.DiscountPrice = product.DiscountPrice;
-                existingProduct.StockQuantity = product.StockQuantity;
-                existingProduct.MinStockLevel = product.MinStockLevel;
-                existingProduct.Weight = product.Weight;
-                existingProduct.Warranty = product.Warranty;
-                existingProduct.IsActive = product.IsActive;
-                existingProduct.IsFeatured = product.IsFeatured;
-                existingProduct.UpdatedDate = DateTime.Now;
+                    // Cập nhật thông tin sản phẩm
+                    existingProduct.ProductName = product.ProductName;
+                    existingProduct.CategoryID = product.CategoryID;
+                    existingProduct.BrandID = product.BrandID;
+                    existingProduct.SupplierID = product.SupplierID;
+                    existingProduct.SKU = product.SKU;
+                    existingProduct.Description = product.Description;
+                    existingProduct.Specifications = product.Specifications;
+                    existingProduct.Price = product.Price;
+                    existingProduct.DiscountPrice = product.DiscountPrice;
+                    existingProduct.StockQuantity = product.StockQuantity;
+                    existingProduct.MinStockLevel = product.MinStockLevel;
+                    existingProduct.Weight = product.Weight;
+                    existingProduct.Warranty = product.Warranty;
+                    existingProduct.IsActive = product.IsActive;
+                    existingProduct.IsFeatured = product.IsFeatured;
+                    existingProduct.UpdatedDate = DateTime.Now;
 
-                db.SaveChanges();
-                TempData["Message"] = "Cập nhật sản phẩm thành công!";
-                return RedirectToAction("Products");
+                    // Xóa hình ảnh cũ không còn trong danh sách
+                    var imagesToDelete = db.ProductImages
+                        .Where(img => img.ProductID == product.ProductID)
+                        .ToList();
+
+                    if (existingImageIds != null)
+                    {
+                        imagesToDelete = imagesToDelete.Where(img => !existingImageIds.Contains(img.ImageID)).ToList();
+                    }
+
+                    foreach (var img in imagesToDelete)
+                    {
+                        db.ProductImages.Remove(img);
+                    }
+
+                    // Thêm hình ảnh mới
+                    if (imageUrls != null && imageUrls.Length > 0)
+                    {
+                        for (int i = 0; i < imageUrls.Length; i++)
+                        {
+                            if (!string.IsNullOrEmpty(imageUrls[i]))
+                            {
+                                var productImage = new ProductImage
+                                {
+                                    ProductID = product.ProductID,
+                                    ImageURL = imageUrls[i],
+                                    IsPrimary = isPrimary != null && isPrimary.Length > i && isPrimary[i],
+                                    DisplayOrder = i,
+                                    CreatedDate = DateTime.Now
+                                };
+                                db.ProductImages.Add(productImage);
+                            }
+                        }
+                    }
+
+                    db.SaveChanges();
+
+                    TempData["Success"] = "Cập nhật sản phẩm thành công!";
+                    return RedirectToAction("Products");
+                }
+                catch (Exception ex)
+                {
+                    TempData["Error"] = "Có lỗi xảy ra: " + ex.Message;
+                }
             }
 
             ViewBag.Categories = new SelectList(db.Categories.Where(c => c.IsActive), "CategoryID", "CategoryName", product.CategoryID);
@@ -193,138 +258,49 @@ namespace TechShop.Controllers
             return View(product);
         }
 
-        // Xóa sản phẩm
+        // POST: Admin/DeleteProduct
         [HttpPost]
-        public ActionResult DeleteProduct(int id)
+        public JsonResult DeleteProduct(int id)
         {
-            if (!IsAdmin()) return Json(new { success = false, message = "Không có quyền" });
+            try
+            {
+                var product = db.Products.Find(id);
+                if (product == null)
+                {
+                    return Json(new { success = false, message = "Sản phẩm không tồn tại." });
+                }
 
-            var product = db.Products.Find(id);
-            if (product == null) return Json(new { success = false, message = "Không tìm thấy sản phẩm" });
+                // Kiểm tra xem sản phẩm có trong đơn hàng nào không
+                if (db.OrderDetails.Any(od => od.ProductID == id))
+                {
+                    // Không xóa, chỉ ẩn
+                    product.IsActive = false;
+                    db.SaveChanges();
+                    return Json(new { success = true, message = "Sản phẩm đã được ẩn (không xóa vì đã có trong đơn hàng)." });
+                }
 
-            product.IsActive = false;
-            db.SaveChanges();
+                // Xóa hình ảnh liên quan
+                var images = db.ProductImages.Where(img => img.ProductID == id).ToList();
+                foreach (var img in images)
+                {
+                    db.ProductImages.Remove(img);
+                }
 
-            return Json(new { success = true, message = "Xóa sản phẩm thành công" });
+                // Xóa sản phẩm
+                db.Products.Remove(product);
+                db.SaveChanges();
+
+                return Json(new { success = true, message = "Xóa sản phẩm thành công!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
         }
 
-        // ============ QUẢN LÝ ĐƠN HÀNG ============
-
-        public ActionResult Orders(string status, string search)
-        {
-            if (!IsAdmin()) return RedirectToAction("Login", "Account");
-
-            var orders = db.Orders
-                .Include(o => o.User)
-                .Include(o => o.Status)
-                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(status))
-            {
-                orders = orders.Where(o => o.Status.StatusName == status);
-            }
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                orders = orders.Where(o => o.OrderCode.Contains(search)
-                                      || o.CustomerName.Contains(search)
-                                      || o.CustomerPhone.Contains(search));
-            }
-
-            ViewBag.OrderStatuses = db.OrderStatuses.OrderBy(s => s.DisplayOrder).ToList();
-            return View(orders.OrderByDescending(o => o.OrderDate).ToList());
-        }
-
-        // Chi tiết đơn hàng admin
-        public ActionResult OrderDetail(int id)
-        {
-            if (!IsAdmin()) return RedirectToAction("Login", "Account");
-
-            var order = db.Orders
-                .Include(o => o.User)
-                .Include(o => o.Status)
-                .Include(o => o.OrderDetails.Select(od => od.Product))
-                .FirstOrDefault(o => o.OrderID == id);
-
-            if (order == null) return HttpNotFound();
-
-            ViewBag.OrderStatuses = new SelectList(db.OrderStatuses.OrderBy(s => s.DisplayOrder), "StatusID", "StatusName", order.StatusID);
-            return View(order);
-        }
-
-        // Cập nhật trạng thái đơn hàng
-        [HttpPost]
-        public ActionResult UpdateOrderStatus(int orderId, int statusId)
-        {
-            if (!IsAdmin()) return Json(new { success = false, message = "Không có quyền" });
-
-            var order = db.Orders.Find(orderId);
-            if (order == null) return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
-
-            var status = db.OrderStatuses.Find(statusId);
-            if (status == null) return Json(new { success = false, message = "Trạng thái không hợp lệ" });
-
-            order.StatusID = statusId;
-
-            if (status.StatusName == "Đang giao" && !order.ShippedDate.HasValue)
-            {
-                order.ShippedDate = DateTime.Now;
-            }
-            else if (status.StatusName == "Đã giao" && !order.DeliveredDate.HasValue)
-            {
-                order.DeliveredDate = DateTime.Now;
-                order.PaymentStatus = "Đã thanh toán";
-            }
-            else if (status.StatusName == "Đã hủy" && !order.CancelledDate.HasValue)
-            {
-                order.CancelledDate = DateTime.Now;
-            }
-
-            db.SaveChanges();
-            return Json(new { success = true, message = "Cập nhật trạng thái thành công" });
-        }
-
-        // ============ QUẢN LÝ NGƯỜI DÙNG ============
-
-        public ActionResult Users(string search, int? roleId)
-        {
-            if (!IsAdmin()) return RedirectToAction("Login", "Account");
-
-            var users = db.Users
-                .Include(u => u.Role)
-                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                users = users.Where(u => u.Username.Contains(search)
-                                    || u.FullName.Contains(search)
-                                    || u.Email.Contains(search));
-            }
-
-            if (roleId.HasValue)
-            {
-                users = users.Where(u => u.RoleID == roleId.Value);
-            }
-
-            ViewBag.Roles = db.Roles.ToList();
-            return View(users.OrderByDescending(u => u.CreatedDate).ToList());
-        }
-
-        // Khóa/Mở khóa user
-        [HttpPost]
-        public ActionResult ToggleUserStatus(int id)
-        {
-            if (!IsAdmin()) return Json(new { success = false, message = "Không có quyền" });
-
-            var user = db.Users.Find(id);
-            if (user == null) return Json(new { success = false, message = "Không tìm thấy người dùng" });
-
-            user.IsActive = !user.IsActive;
-            db.SaveChanges();
-
-            return Json(new { success = true, isActive = user.IsActive });
-        }
-
+        // ==========================================
+        // DISPOSE
+        // ==========================================
         protected override void Dispose(bool disposing)
         {
             if (disposing)

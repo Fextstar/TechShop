@@ -239,8 +239,8 @@
     <Content Include="Views\Product\Index.cshtml" />
     <Content Include="Views\Posts\Index.cshtml" />
     <Content Include="Views\Posts\Detail.cshtml" />
-    <Content Include="Views\Admin\ProductCreate.cshtml" />
-    <Content Include="Views\Admin\ProductEdit.cshtml" />
+    <Content Include="Views\Admin\CreateProduct.cshtml" />
+    <Content Include="Views\Admin\EditProduct.cshtml" />
     <Content Include="Views\Admin\Orders.cshtml" />
     <Content Include="Views\Admin\Users.cshtml" />
   </ItemGroup>

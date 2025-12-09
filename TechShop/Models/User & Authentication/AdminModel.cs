@@ -18,6 +18,7 @@ namespace TechShop.Models.User___Authentication
         public int TotalCustomers { get; set; }
         public int PendingOrders { get; set; }
         public int LowStockProducts { get; set; }
+        public List<Order> RecentOrders { get; set; }
     }
 
     /// <summary>
