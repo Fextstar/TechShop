@@ -18,6 +18,7 @@
         body {
             font-family: 'Segoe UI', Tahoma, sans-serif;
             background: #f5f6fa;
+            margin: 0;
         }
 
         .sidebar {
@@ -67,7 +68,48 @@
             padding: 25px;
             border-radius: 12px;
             box-shadow: 0 3px 15px rgba(0,0,0,0.08);
-            max-width: 1000px;
+            max-width: 900px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            display: block;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            font-size: 14px;
+        }
+
+            .form-control:focus {
+                border-color: #667eea;
+                outline: none;
+            }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
         }
 
         .row {
@@ -77,43 +119,6 @@
 
         .col-6 {
             flex: 1;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        label {
-            font-weight: 600;
-            display: block;
-            margin-bottom: 6px;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 2px solid #e0e0e0;
-        }
-
-            .form-control:focus {
-                border-color: #667eea;
-            }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 12px 22px;
-            border-radius: 8px;
-            font-weight: 600;
-        }
-
-        .btn-secondary {
-            background: #bdc3c7;
-            color: white;
-            padding: 12px 22px;
-            border-radius: 8px;
-            font-weight: 600;
         }
     </style>
 </head>
@@ -139,20 +144,19 @@
         </a>
     </div>
 
-    <!-- Main Content -->
+    <!-- Main -->
     <div class="main-content">
 
         <div class="topbar">
             <h2><i class="fas fa-plus"></i> Thêm sản phẩm mới</h2>
 
-            <a href="@Url.Action("Products", "Admin")" class="btn-secondary">
+            <a href="@Url.Action("Products", "Admin")" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Quay lại
             </a>
         </div>
 
         <div class="form-card">
-
-            @using (Html.BeginForm("CreateProduct", "Admin", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            @using (Html.BeginForm("CreateProduct", "Admin", FormMethod.Post))
             {
                 <div class="row">
                     <div class="col-6">
@@ -163,7 +167,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Mã SKU</label>
+                            <label>SKU</label>
                             @Html.TextBoxFor(m => m.SKU, new { @class = "form-control" })
                         </div>
 
@@ -192,44 +196,22 @@
                             <label>Giá giảm (nếu có)</label>
                             @Html.TextBoxFor(m => m.DiscountPrice, new { @class = "form-control", type = "number" })
                         </div>
+                    </div>
 
+                    <div class="col-6">
                         <div class="form-group">
-                            <label>Số lượng tồn</label>
+                            <label>Tồn kho</label>
                             @Html.TextBoxFor(m => m.StockQuantity, new { @class = "form-control", type = "number" })
                         </div>
 
                         <div class="form-group">
-                            <label>Mức tồn kho tối thiểu</label>
-                            @Html.TextBoxFor(m => m.MinStockLevel, new { @class = "form-control", type = "number" })
-                        </div>
-
-                    </div>
-
-                    <div class="col-6">
-
-                        <div class="form-group">
-                            <label>Trọng lượng (kg)</label>
-                            @Html.TextBoxFor(m => m.Weight, new { @class = "form-control", type = "number", step = "0.1" })
-                        </div>
-
-                        <div class="form-group">
-                            <label>Bảo hành (tháng)</label>
-                            @Html.TextBoxFor(m => m.Warranty, new { @class = "form-control", type = "number" })
-                        </div>
-
-                        <div class="form-group">
-                            <label>Ảnh chính (Upload)</label>
-                            <input type="file" name="ImageFile" class="form-control" accept="image/*" />
+                            <label>Ảnh (URL)</label>
+                            <input type="text" name="ImageURL" class="form-control" />
                         </div>
 
                         <div class="form-group">
                             <label>Mô tả</label>
                             @Html.TextAreaFor(m => m.Description, new { @class = "form-control", rows = 4 })
-                        </div>
-
-                        <div class="form-group">
-                            <label>Thông số kỹ thuật</label>
-                            @Html.TextAreaFor(m => m.Specifications, new { @class = "form-control", rows = 6 })
                         </div>
 
                         <div class="form-group">
@@ -241,11 +223,10 @@
                             <label>Nổi bật</label><br />
                             @Html.CheckBoxFor(m => m.IsFeatured) Sản phẩm nổi bật
                         </div>
-
                     </div>
                 </div>
 
-                <button type="submit" class="btn-primary">
+                <button class="btn btn-primary">
                     <i class="fas fa-save"></i> Lưu sản phẩm
                 </button>
             }
