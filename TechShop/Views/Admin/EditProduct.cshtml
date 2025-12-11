@@ -85,21 +85,6 @@
         .btn-primary:hover {
             background: #5567d9;
         }
-
-        .image-preview {
-            width: 140px;
-            height: 140px;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 1px solid #ddd;
-            margin-bottom: 10px;
-        }
-
-        .switch {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
     </style>
 </head>
 
@@ -112,96 +97,88 @@
         <div class="form-card">
             @using (Html.BeginForm("EditProduct", "Admin", FormMethod.Post))
             {
+                @Html.AntiForgeryToken() <!-- 🔥 THÊM TOKEN -->
                 @Html.HiddenFor(m => m.ProductID)
 
-                <!-- Tên sản phẩm -->
-                <div class="form-group">
-                    <label>Tên sản phẩm</label>
-                    @Html.TextBoxFor(m => m.ProductName, new { @class = "form-control" })
-                    @Html.ValidationMessageFor(m => m.ProductName, "", new { @style = "color:red" })
+                <div class="row">
+                    <div class="col-6">
+
+                        <!-- Tên sản phẩm -->
+                        <div class="form-group">
+                            <label>Tên sản phẩm</label>
+                            @Html.TextBoxFor(m => m.ProductName, new { @class = "form-control" })
+                        </div>
+
+                        <!-- SKU -->
+                        <div class="form-group">
+                            <label>Mã SKU</label>
+                            @Html.TextBoxFor(m => m.SKU, new { @class = "form-control" })
+                        </div>
+
+                        <!-- Danh mục -->
+                        <div class="form-group">
+                            <label>Danh mục</label>
+                            @Html.DropDownListFor(m => m.CategoryID, (SelectList)ViewBag.Categories,
+                                "-- Chọn danh mục --",
+                                new { @class = "form-control" })
+                        </div>
+
+                        <!-- Thương hiệu -->
+                        <div class="form-group">
+                            <label>Thương hiệu</label>
+                            @Html.DropDownListFor(m => m.BrandID, (SelectList)ViewBag.Brands,
+                                "-- Chọn thương hiệu --",
+                                new { @class = "form-control" })
+                        </div>
+
+                        <!-- Giá -->
+                        <div class="form-group">
+                            <label>Giá</label>
+                            @Html.TextBoxFor(m => m.Price, new { @class = "form-control", type = "text" })
+                        </div>
+
+                        <!-- Giá giảm -->
+                        <div class="form-group">
+                            <label>Giá giảm (nếu có)</label>
+                            @Html.TextBoxFor(m => m.DiscountPrice, new { @class = "form-control", type = "text" })
+                        </div>
+
+                    </div>
+
+                    <div class="col-6">
+
+                        <!-- Tồn kho -->
+                        <div class="form-group">
+                            <label>Tồn kho</label>
+                            @Html.TextBoxFor(m => m.StockQuantity, new { @class = "form-control", type = "number" })
+                        </div>
+
+                        <!-- Ảnh URL -->
+                        <div class="form-group">
+                            <label>Ảnh (URL)</label>
+                            <input type="text" name="ImageURL" class="form-control" />
+                        </div>
+
+                        <!-- Mô tả -->
+                        <div class="form-group">
+                            <label>Mô tả</label>
+                            @Html.TextAreaFor(m => m.Description, new { @class = "form-control", rows = 4 })
+                        </div>
+
+                        <!-- Trạng thái -->
+                        <div class="form-group">
+                            <label>Trạng thái</label><br />
+                            @Html.CheckBoxFor(m => m.IsActive) Hoạt động
+                        </div>
+
+                        <!-- Nổi bật -->
+                        <div class="form-group">
+                            <label>Nổi bật</label><br />
+                            @Html.CheckBoxFor(m => m.IsFeatured) Sản phẩm nổi bật
+                        </div>
+                    </div>
                 </div>
 
-                <!-- SKU -->
-                <div class="form-group">
-                    <label>Mã SKU</label>
-                    @Html.TextBoxFor(m => m.SKU, new { @class = "form-control" })
-                </div>
-
-                <!-- Danh mục -->
-                <div class="form-group">
-                    <label>Danh mục</label>
-                    @Html.DropDownList("CategoryID", (SelectList)ViewBag.Categories, "- Chọn danh mục -", new { @class = "form-control" })
-                </div>
-
-                <!-- Thương hiệu -->
-                <div class="form-group">
-                    <label>Thương hiệu</label>
-                    @Html.DropDownList("BrandID", (SelectList)ViewBag.Brands, "- Chọn thương hiệu -", new { @class = "form-control" })
-                </div>
-
-                <!-- Nhà cung cấp -->
-                <div class="form-group">
-                    <label>Nhà cung cấp</label>
-                    @Html.DropDownList("SupplierID", (SelectList)ViewBag.Suppliers, "- Chọn nhà cung cấp -", new { @class = "form-control" })
-                </div>
-
-                <!-- Mô tả -->
-                <div class="form-group">
-                    <label>Mô tả</label>
-                    @Html.TextAreaFor(m => m.Description, new { @class = "form-control", rows = 4 })
-                </div>
-
-                <!-- Thông số kỹ thuật -->
-                <div class="form-group">
-                    <label>Thông số kỹ thuật</label>
-                    @Html.TextAreaFor(m => m.Specifications, new { @class = "form-control", rows = 4 })
-                </div>
-
-                <!-- Giá -->
-                <div class="form-group">
-                    <label>Giá</label>
-                    @Html.TextBoxFor(m => m.Price, new { @class = "form-control", type = "number", step = "0.01" })
-                </div>
-
-                <!-- Giá giảm -->
-                <div class="form-group">
-                    <label>Giá giảm (nếu có)</label>
-                    @Html.TextBoxFor(m => m.DiscountPrice, new { @class = "form-control", type = "number", step = "0.01" })
-                </div>
-
-                <!-- Tồn kho -->
-                <div class="form-group">
-                    <label>Số lượng tồn</label>
-                    @Html.TextBoxFor(m => m.StockQuantity, new { @class = "form-control", type = "number" })
-                </div>
-
-                <!-- Tồn tối thiểu -->
-                <div class="form-group">
-                    <label>Tồn kho tối thiểu</label>
-                    @Html.TextBoxFor(m => m.MinStockLevel, new { @class = "form-control", type = "number" })
-                </div>
-
-                <!-- Bảo hành -->
-                <div class="form-group">
-                    <label>Bảo hành (tháng)</label>
-                    @Html.TextBoxFor(m => m.Warranty, new { @class = "form-control", type = "number" })
-                </div>
-
-                <!-- Trạng thái -->
-                <div class="form-group">
-                    <label>Trạng thái</label>
-                    @Html.CheckBoxFor(m => m.IsActive) Hoạt động
-                </div>
-
-                <!-- Nổi bật -->
-                <div class="form-group">
-                    <label>Nổi bật</label>
-                    @Html.CheckBoxFor(m => m.IsFeatured) Đánh dấu nổi bật
-                </div>
-
-                <br />
-
-                <!-- Buttons -->
                 <button type="submit" class="btn-primary">
                     <i class="fas fa-save"></i> Lưu thay đổi
                 </button>

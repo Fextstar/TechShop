@@ -162,6 +162,16 @@
     </style>
 </head>
 
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+<!-- PopperJS (bắt buộc cho dropdown/toggle của Bootstrap 4) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.2/js/bootstrap.min.js"></script>
+
+
 <body>
 
     <!-- NAVBAR -->
@@ -223,14 +233,17 @@
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-user-circle"></i> @fullName
-                                @* Hiển thị badge nếu là Admin hoặc Manager *@
+
                                 @if (roleId == 1 || roleId == 2)
                                 {
-                                    <span class="admin-badge">@(roleId == 1 ? "Admin" : "Manager")</span>
+                                    <span class="admin-badge">
+                                        @(roleId == 1 ? "Admin" : "Manager")
+                                    </span>
                                 }
                             </a>
 
-                            <div class="dropdown-menu dropdown-menu-right">
+                            <div class="dropdown-menu dropdown-menu-right shadow">
+
                                 <a class="dropdown-item" href="@Url.Action("Profile", "Account")">
                                     <i class="fas fa-user"></i> Hồ sơ cá nhân
                                 </a>
@@ -239,21 +252,25 @@
                                     <i class="fas fa-receipt"></i> Đơn hàng của tôi
                                 </a>
 
-                                @* Chỉ Admin/Manager mới thấy Admin Panel *@
                                 @if (roleId == 1 || roleId == 2)
                                 {
                                     <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="@Url.Action("Index", "Admin")" style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; font-weight: bold;">
+                                    <a class="dropdown-item font-weight-bold text-white"
+                                       style="background: linear-gradient(45deg, #667eea, #764ba2);"
+                                       href="@Url.Action("Index", "Admin")">
                                         <i class="fas fa-tools"></i> Trang Quản trị
                                     </a>
                                 }
 
                                 <div class="dropdown-divider"></div>
-                                <!-- NÚT LOGOUT CẢI TIẾN -->
-                                <a class="dropdown-item text-danger logout-item" href="@Url.Action("Logout", "Account")" title="Đăng xuất an toàn">
+
+                                <!-- LOGOUT -->
+                                <a class="dropdown-item logout-item text-danger"
+                                   href="@Url.Action("Logout", "Account")">
                                     <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                                    <small class="d-block text-muted">(Thoát phiên làm việc)</small>
+                                    <small class="d-block text-muted">Thoát phiên làm việc</small>
                                 </a>
+
                             </div>
                         </li>
                     }
@@ -271,6 +288,7 @@
                             </a>
                         </li>
                     }
+
                 </ul>
 
             </div>

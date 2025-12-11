@@ -154,9 +154,15 @@
         @if (!string.IsNullOrEmpty(Model.Specifications))
         {
             <div class="mt-4">
-                <h5>Thông số kỹ thuật</h5>
-                <div class="card">
-                    <div class="card-body">
+
+                <!-- TIÊU ĐỀ -->
+                <h5 class="section-title">
+                    <i class="fas fa-microchip"></i> Thông số kỹ thuật
+                </h5>
+
+                <!-- CARD THÔNG SỐ -->
+                <div class="tech-spec-card">
+                    <div class="tech-spec-content">
                         @Html.Raw(Model.Specifications?.Replace("\n", "<br>"))
                     </div>
                 </div>
@@ -251,5 +257,53 @@
                 transform: translateY(-5px);
                 box-shadow: 0 4px 20px rgba(0,0,0,0.15);
             }
+
+
+        <style >
+        /* --- Tiêu đề Thông số kỹ thuật --- */
+        .section-title {
+            font-weight: 700;
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: #007bff;
+            font-size: 22px;
+        }
+
+        /* --- Khung CARD chính --- */
+        .tech-spec-card {
+            background: #f8f9fc;
+            border: 1px solid #e2e6ea;
+            border-radius: 12px;
+            padding: 20px 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: 0.3s ease;
+            margin-bottom: 25px;
+        }
+
+            .tech-spec-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            }
+
+        /* --- Nội dung text --- */
+        .tech-spec-content {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #444;
+            white-space: normal;
+        }
+
+            .tech-spec-content br {
+                margin-bottom: 6px;
+            }
+    </style>
+
     </style>
 }
