@@ -6,7 +6,7 @@
 }
 
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,10 +17,11 @@
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <!-- Animate.css cho hiệu ứng -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
     <!-- CUSTOM STYLE -->
     <style>
-        /* --- Navbar gradient hiện đại --- */
         .navbar-modern {
             background: linear-gradient(135deg, #667eea, #764ba2);
             padding: 12px 0;
@@ -49,65 +50,37 @@
                     color: #fff !important;
                 }
 
-            .navbar-modern .dropdown-menu {
-                border-radius: 15px;
-                box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-                padding: 10px 0;
-                border: none;
-            }
-
-            .navbar-modern .dropdown-item {
-                padding: 12px 20px;
-                border-radius: 8px;
-                transition: 0.2s;
-                margin: 0 10px;
-            }
-
-                .navbar-modern .dropdown-item:hover {
-                    background: #667eea;
-                    color: #fff !important;
-                }
-
-                .navbar-modern .dropdown-item i {
-                    width: 20px;
-                    text-align: center;
-                    margin-right: 8px;
-                }
-
-        /* Logout item cải tiến */
-        .logout-item {
-            border-left: 4px solid #ff4757;
-            font-weight: 500;
-            transition: all 0.3s ease;
+        .dropdown-menu {
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            border: none;
         }
 
-            .logout-item:hover {
-                background: #ffe6e6 !important;
-                color: #dc3545 !important;
-                transform: translateX(5px);
+        .dropdown-item {
+            padding: 12px 20px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+            .dropdown-item:hover {
+                background: #667eea;
+                color: #fff !important;
             }
 
-            .logout-item i.fa-sign-out-alt {
-                transition: transform 0.3s ease;
-            }
+        .logout-item {
+            border-left: 4px solid #ff4757;
+        }
 
-            .logout-item:hover i.fa-sign-out-alt {
-                transform: scale(1.1);
-            }
-
-        /* Badge cho Admin/Manager */
         .admin-badge {
             background: linear-gradient(45deg, #ff6b6b, #ffa502);
-            color: white;
+            color: #fff;
             font-size: 10px;
             padding: 2px 8px;
             border-radius: 10px;
-            margin-left: 8px;
+            margin-left: 6px;
             font-weight: bold;
-            text-transform: uppercase;
         }
 
-        /* --- Badge giỏ hàng --- */
         #cart-count {
             background: #ff4757;
             border-radius: 50%;
@@ -116,13 +89,11 @@
             margin-left: 5px;
         }
 
-        /* --- Main Content spacing --- */
         .body-content {
             padding: 40px 0;
             min-height: 70vh;
         }
 
-        /* --- Footer hiện đại tối giản --- */
         footer {
             background: #1f1f2e;
             color: #bbb;
@@ -133,12 +104,10 @@
             footer h5 {
                 color: #fff;
                 margin-bottom: 20px;
-                font-size: 18px;
             }
 
             footer a {
                 color: #bbb;
-                transition: 0.2s;
                 text-decoration: none;
             }
 
@@ -146,31 +115,39 @@
                     color: #fff;
                 }
 
-            footer .copyright {
-                text-align: center;
-                margin-top: 30px;
-                color: #888;
-                border-top: 1px solid #333;
-                padding-top: 20px;
-            }
+        .copyright {
+            text-align: center;
+            margin-top: 30px;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+            color: #888;
+        }
 
-        /* Alert messages */
         .alert {
             border-radius: 10px;
-            margin-bottom: 20px;
         }
+
+        /* FIX dropdown bị giật / di chuyển */
+        .navbar .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            transform: none !important;
+            margin-top: 8px;
+            will-change: auto;
+        }
+
+            .navbar .dropdown-menu .dropdown-item {
+                white-space: nowrap;
+            }
+
+        /* KHÔNG thay đổi padding khi hover */
+        .navbar-modern .nav-link,
+        .dropdown-item {
+            box-sizing: border-box;
+        }
+
     </style>
 </head>
-
-<!-- jQuery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-
-<!-- PopperJS (bắt buộc cho dropdown/toggle của Bootstrap 4) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
-
-<!-- Bootstrap JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.2/js/bootstrap.min.js"></script>
-
 
 <body>
 
@@ -179,8 +156,7 @@
         <div class="container">
 
             <a class="navbar-brand" href="@Url.Action("Index", "Home")">
-                <div><i class="fas fa-laptop"></i></div>
-                TechShop
+                <i class="fas fa-laptop"></i> TechShop
             </a>
 
             <button class="navbar-toggler text-white" type="button" data-toggle="collapse" data-target="#mainNav">
@@ -189,34 +165,23 @@
 
             <div class="collapse navbar-collapse" id="mainNav">
 
-                <!-- LEFT MENU -->
+                <!-- LEFT -->
                 <ul class="navbar-nav mr-auto ml-3">
                     <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Index", "Home")">
-                            <i class="fas fa-home"></i> Trang chủ
-                        </a>
+                        <a class="nav-link" href="@Url.Action("Index", "Home")"><i class="fas fa-home"></i> Trang chủ</a>
                     </li>
-
                     <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Index", "Product")">
-                            <i class="fas fa-box"></i> Sản phẩm
-                        </a>
+                        <a class="nav-link" href="@Url.Action("Index", "Product")"><i class="fas fa-box"></i> Sản phẩm</a>
                     </li>
-
                     <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Index", "Posts")">
-                            <i class="fas fa-newspaper"></i> Tin tức
-                        </a>
+                        <a class="nav-link" href="@Url.Action("Index", "Posts")"><i class="fas fa-newspaper"></i> Tin tức</a>
                     </li>
-
                     <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Contact", "Home")">
-                            <i class="fas fa-envelope"></i> Liên hệ
-                        </a>
+                        <a class="nav-link" href="@Url.Action("Contact", "Home")"><i class="fas fa-envelope"></i> Liên hệ</a>
                     </li>
                 </ul>
 
-                <!-- RIGHT SECTION -->
+                <!-- RIGHT -->
                 <ul class="navbar-nav">
 
                     <!-- Cart -->
@@ -227,23 +192,18 @@
                         </a>
                     </li>
 
-                    <!-- Nếu đã đăng nhập -->
                     @if (isLogin)
                     {
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">
                                 <i class="fas fa-user-circle"></i> @fullName
-
                                 @if (roleId == 1 || roleId == 2)
                                 {
-                                    <span class="admin-badge">
-                                        @(roleId == 1 ? "Admin" : "Manager")
-                                    </span>
+                                    <span class="admin-badge">@(roleId == 1 ? "Admin" : "Manager")</span>
                                 }
                             </a>
 
-                            <div class="dropdown-menu dropdown-menu-right shadow">
-
+                            <div class="dropdown-menu dropdown-menu-right">
                                 <a class="dropdown-item" href="@Url.Action("Profile", "Account")">
                                     <i class="fas fa-user"></i> Hồ sơ cá nhân
                                 </a>
@@ -255,22 +215,19 @@
                                 @if (roleId == 1 || roleId == 2)
                                 {
                                     <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item font-weight-bold text-white"
-                                       style="background: linear-gradient(45deg, #667eea, #764ba2);"
+                                    <a class="dropdown-item text-white"
+                                       style="background: linear-gradient(45deg,#667eea,#764ba2);"
                                        href="@Url.Action("Index", "Admin")">
-                                        <i class="fas fa-tools"></i> Trang Quản trị
+                                        <i class="fas fa-tools"></i> Trang quản trị
                                     </a>
                                 }
 
                                 <div class="dropdown-divider"></div>
 
-                                <!-- LOGOUT -->
                                 <a class="dropdown-item logout-item text-danger"
                                    href="@Url.Action("Logout", "Account")">
                                     <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                                    <small class="d-block text-muted">Thoát phiên làm việc</small>
                                 </a>
-
                             </div>
                         </li>
                     }
@@ -281,61 +238,28 @@
                                 <i class="fas fa-sign-in-alt"></i> Đăng nhập
                             </a>
                         </li>
-
                         <li class="nav-item">
                             <a class="nav-link" href="@Url.Action("Register", "Account")">
                                 <i class="fas fa-user-plus"></i> Đăng ký
                             </a>
                         </li>
                     }
-
                 </ul>
 
             </div>
         </div>
     </nav>
 
-    <!-- MAIN CONTENT -->
+    <!-- CONTENT -->
     <div class="container body-content">
-        @* Display TempData messages *@
+
         @if (TempData["Success"] != null)
         {
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fas fa-check-circle"></i> @TempData["Success"]
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
+            <div class="alert alert-success">@TempData["Success"]</div>
         }
-
         @if (TempData["Error"] != null)
         {
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        }
-
-        @if (TempData["Warning"] != null)
-        {
-            <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-triangle"></i> @TempData["Warning"]
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        }
-
-        @if (TempData["Info"] != null)
-        {
-            <div class="alert alert-info alert-dismissible fade show" role="alert">
-                <i class="fas fa-info-circle"></i> @TempData["Info"]
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
+            <div class="alert alert-danger">@TempData["Error"]</div>
         }
 
         @RenderBody()
@@ -345,54 +269,58 @@
     <footer>
         <div class="container">
             <div class="row">
-                <div class="col-md-4 mb-4">
-                    <h5><i class="fas fa-laptop"></i> TechShop</h5>
-                    <p>Website kinh doanh thiết bị máy tính chất lượng cao.</p>
-                    <div class="social-links mt-3">
-                        <a href="#" class="mr-3"><i class="fab fa-facebook fa-lg"></i></a>
-                        <a href="#" class="mr-3"><i class="fab fa-youtube fa-lg"></i></a>
-                        <a href="#" class="mr-3"><i class="fab fa-instagram fa-lg"></i></a>
-                    </div>
+                <div class="col-md-4">
+                    <h5>TechShop</h5>
+                    <p>Website kinh doanh thiết bị máy tính.</p>
                 </div>
-
-                <div class="col-md-4 mb-4">
-                    <h5>Liên kết nhanh</h5>
+                <div class="col-md-4">
+                    <h5>Liên kết</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a href="@Url.Action("Index", "Home")"><i class="fas fa-angle-right"></i> Trang chủ</a></li>
-                        <li class="mb-2"><a href="@Url.Action("Index", "Product")"><i class="fas fa-angle-right"></i> Sản phẩm</a></li>
-                        <li class="mb-2"><a href="@Url.Action("Index", "Posts")"><i class="fas fa-angle-right"></i> Tin tức</a></li>
-                        <li class="mb-2"><a href="@Url.Action("Contact", "Home")"><i class="fas fa-angle-right"></i> Liên hệ</a></li>
+                        <li><a href="@Url.Action("Index","Home")">Trang chủ</a></li>
+                        <li><a href="@Url.Action("Index","Product")">Sản phẩm</a></li>
+                        <li><a href="@Url.Action("Contact","Home")">Liên hệ</a></li>
                     </ul>
                 </div>
-
-                <div class="col-md-4 mb-4">
-                    <h5>Thông tin liên hệ</h5>
-                    <p>
-                        <i class="fas fa-phone"></i> <strong>Hotline:</strong> 0704449834<br />
-                        <i class="fas fa-envelope"></i> <strong>Email:</strong> 2200010884@nttu.edu.vn<br />
-                        <i class="fas fa-map-marker-alt"></i> <strong>Địa chỉ:</strong> TP. Hồ Chí Minh<br />
-                        <i class="fas fa-clock"></i> <strong>Giờ làm việc:</strong> 8:00 - 22:00
-                    </p>
+                <div class="col-md-4">
+                    <h5>Liên hệ</h5>
+                    <p>Email: 2200010884@nttu.edu.vn</p>
+                    <p>Hotline: 0704449834</p>
                 </div>
             </div>
 
             <div class="copyright">
-                © @DateTime.Now.Year TechShop – Khóa luận tốt nghiệp – Nguyễn Hồng Phúc (MSSV: 2200010884)
+                © @DateTime.Now.Year TechShop – KLTN – Nguyễn Hồng Phúc
             </div>
         </div>
     </footer>
 
-    @Scripts.Render("~/bundles/jquery")
-    @Scripts.Render("~/bundles/bootstrap")
+    <!-- JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.2/js/bootstrap.min.js"></script>
+    <script src="~/Scripts/cart.js"></script>
 
     <script>
-        // Auto-hide alerts after 5 seconds
         $(document).ready(function () {
+
+            // Load cart count
+            $.get('/Cart/GetCartCount', function (res) {
+                if (res && res.count !== undefined) {
+                    $('#cart-count').text(res.count);
+                }
+            });
+
+            // Auto hide alerts
             setTimeout(function () {
                 $('.alert').fadeOut('slow');
             }, 5000);
         });
     </script>
+
+
+    <!-- CART SCRIPT -->
+    <script src="~/Scripts/cart.js"></script>
+
 
     @RenderSection("scripts", required: false)
 </body>

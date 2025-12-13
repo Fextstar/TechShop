@@ -357,14 +357,15 @@ namespace TechShop.Controllers
             int userId = (int)Session["UserID"];
 
             var orders = db.Orders
-                .Include(o => o.Status)  // Sửa: OrderStatus → Status
+                .Include(o => o.Status)
                 .Include(o => o.OrderDetails)
                 .Where(o => o.UserID == userId)
                 .OrderByDescending(o => o.OrderDate)
                 .ToList();
 
-            return View(orders);
+            return View("MyOrders", orders); //
         }
+
 
         // GET: Account/OrderDetail/5
         [HttpGet]

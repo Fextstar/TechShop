@@ -1,142 +1,122 @@
 ﻿@model TechShop.Models.Order
 @{
     ViewBag.Title = "Thanh toán";
-    var cart = ViewBag.Cart as List<TechShop.Models.SessionCartItem>;
-    decimal totalAmount = ViewBag.TotalAmount;
-    decimal shippingFee = ViewBag.ShippingFee;
-    decimal discountAmount = ViewBag.DiscountAmount;
+    var cart = ViewBag.Cart as List<TechShop.Models.SessionCartItem> ?? new List<TechShop.Models.SessionCartItem>();
+    decimal totalAmount = ViewBag.TotalAmount ?? 0;
+    decimal shippingFee = ViewBag.ShippingFee ?? 0;
+    decimal discountAmount = ViewBag.DiscountAmount as decimal? ?? 0;
     decimal finalAmount = totalAmount + shippingFee - discountAmount;
 }
 
 <h2 class="mb-4"><i class="fas fa-credit-card"></i> Thanh toán</h2>
 
-@using (Html.BeginForm("PlaceOrder", "Order", FormMethod.Post, new { @class = "needs-validation" }))
+@using (Html.BeginForm("Checkout", "Order", FormMethod.Post, new { @class = "needs-validation" }))
 {
     @Html.AntiForgeryToken()
 
     <div class="row">
-        <!-- Thông tin giao hàng -->
+        <!-- THÔNG TIN GIAO HÀNG -->
         <div class="col-md-7">
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0"><i class="fas fa-shipping-fast"></i> Thông tin giao hàng</h5>
                 </div>
                 <div class="card-body">
+
                     <div class="form-group">
-                        @Html.LabelFor(m => m.CustomerName, new { @class = "font-weight-bold" })
+                        @Html.LabelFor(m => m.CustomerName)
                         @Html.TextBoxFor(m => m.CustomerName, new { @class = "form-control", required = "required" })
                         @Html.ValidationMessageFor(m => m.CustomerName, "", new { @class = "text-danger" })
                     </div>
 
                     <div class="form-row">
                         <div class="form-group col-md-6">
-                            @Html.LabelFor(m => m.CustomerPhone, new { @class = "font-weight-bold" })
+                            @Html.LabelFor(m => m.CustomerPhone)
                             @Html.TextBoxFor(m => m.CustomerPhone, new { @class = "form-control", required = "required" })
                             @Html.ValidationMessageFor(m => m.CustomerPhone, "", new { @class = "text-danger" })
                         </div>
                         <div class="form-group col-md-6">
-                            @Html.LabelFor(m => m.CustomerEmail, new { @class = "font-weight-bold" })
+                            @Html.LabelFor(m => m.CustomerEmail)
                             @Html.TextBoxFor(m => m.CustomerEmail, new { @class = "form-control", type = "email" })
                         </div>
                     </div>
 
                     <div class="form-group">
-                        @Html.LabelFor(m => m.ShippingAddress, new { @class = "font-weight-bold" })
+                        @Html.LabelFor(m => m.ShippingAddress)
                         @Html.TextAreaFor(m => m.ShippingAddress, new { @class = "form-control", rows = 3, required = "required" })
                         @Html.ValidationMessageFor(m => m.ShippingAddress, "", new { @class = "text-danger" })
                     </div>
 
                     <div class="form-group">
-                        @Html.LabelFor(m => m.Note, "Ghi chú (tùy chọn)", new { @class = "font-weight-bold" })
+                        @Html.LabelFor(m => m.Note, "Ghi chú (tùy chọn)")
                         @Html.TextAreaFor(m => m.Note, new { @class = "form-control", rows = 2 })
                     </div>
+
                 </div>
             </div>
 
-            <!-- Phương thức thanh toán -->
+            <!-- PHƯƠNG THỨC THANH TOÁN -->
             <div class="card">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0"><i class="fas fa-money-bill-wave"></i> Phương thức thanh toán</h5>
                 </div>
                 <div class="card-body">
                     <div class="form-check mb-2">
-                        @Html.RadioButtonFor(m => m.PaymentMethod, "COD", new { @class = "form-check-input", @checked = "checked" })
-                        <label class="form-check-label">
-                            <strong>Thanh toán khi nhận hàng (COD)</strong><br>
-                            <small class="text-muted">Thanh toán bằng tiền mặt khi nhận hàng</small>
-                        </label>
+                        @Html.RadioButtonFor(m => m.PaymentMethod, "COD", new { @checked = "checked" })
+                        <label class="form-check-label">Thanh toán khi nhận hàng (COD)</label>
                     </div>
                     <div class="form-check mb-2">
-                        @Html.RadioButtonFor(m => m.PaymentMethod, "BankTransfer", new { @class = "form-check-input" })
-                        <label class="form-check-label">
-                            <strong>Chuyển khoản ngân hàng</strong><br>
-                            <small class="text-muted">Chuyển khoản trước, giao hàng sau</small>
-                        </label>
+                        @Html.RadioButtonFor(m => m.PaymentMethod, "BankTransfer")
+                        <label class="form-check-label">Chuyển khoản ngân hàng</label>
                     </div>
                     <div class="form-check">
-                        @Html.RadioButtonFor(m => m.PaymentMethod, "VNPay", new { @class = "form-check-input" })
-                        <label class="form-check-label">
-                            <strong>VNPay</strong><br>
-                            <small class="text-muted">Thanh toán qua cổng VNPay (sắp ra mắt)</small>
-                        </label>
+                        @Html.RadioButtonFor(m => m.PaymentMethod, "VNPay")
+                        <label class="form-check-label">VNPay (sắp ra mắt)</label>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Tóm tắt đơn hàng -->
+        <!-- TÓM TẮT ĐƠN HÀNG -->
         <div class="col-md-5">
             <div class="card">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0"><i class="fas fa-shopping-bag"></i> Đơn hàng của bạn</h5>
                 </div>
                 <div class="card-body">
-                    <!-- Danh sách sản phẩm -->
-                    <div style="max-height: 300px; overflow-y: auto;">
-                        @foreach (var item in cart)
-                        {
-                            <div class="d-flex mb-3 pb-3 border-bottom">
-                                <img src="@item.ImageUrl" alt="@item.ProductName" style="width: 60px; height: 60px; object-fit: cover;" class="mr-3">
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">@item.ProductName</h6>
-                                    <small class="text-muted">SL: @item.Quantity</small>
-                                    <div class="text-danger font-weight-bold">@item.TotalPrice.ToString("N0") đ</div>
-                                </div>
-                            </div>
-                        }
-                    </div>
 
-                    <!-- Tổng tiền -->
+                    @foreach (var item in cart)
+                    {
+                        <div class="d-flex mb-3 border-bottom pb-2">
+                            <img src="@item.ImageUrl" width="60" class="mr-3" />
+                            <div>
+                                <strong>@item.ProductName</strong><br />
+                                SL: @item.Quantity<br />
+                                <span class="text-danger">@item.TotalPrice.ToString("N0") đ</span>
+                            </div>
+                        </div>
+                    }
+
                     <table class="table table-sm mt-3">
-                        <tr>
-                            <td>Tạm tính:</td>
-                            <td class="text-right"><strong>@totalAmount.ToString("N0") đ</strong></td>
-                        </tr>
-                        <tr>
-                            <td>Phí vận chuyển:</td>
-                            <td class="text-right">@shippingFee.ToString("N0") đ</td>
-                        </tr>
-                        @if (discountAmount > 0)
-                        {
-                            <tr class="text-success">
-                                <td>Giảm giá:</td>
-                                <td class="text-right">-@discountAmount.ToString("N0") đ</td>
-                            </tr>
-                        }
+                        <tr><td>Tạm tính</td><td class="text-right">@totalAmount.ToString("N0") đ</td></tr>
+                        <tr><td>Phí ship</td><td class="text-right">@shippingFee.ToString("N0") đ</td></tr>
                         <tr class="border-top">
-                            <td><strong>Tổng cộng:</strong></td>
-                            <td class="text-right">
-                                <h4 class="text-danger mb-0">@finalAmount.ToString("N0") đ</h4>
+                            <td><strong>Tổng cộng</strong></td>
+                            <td class="text-right text-danger">
+                                <strong>@finalAmount.ToString("N0") đ</strong>
                             </td>
                         </tr>
                     </table>
 
-                    <button type="submit" class="btn btn-success btn-block btn-lg mt-3">
+                    <!-- NÚT ĐẶT HÀNG -->
+                    <button type="submit" class="btn btn-success btn-block btn-lg mt-3" id="placeOrderBtn">
                         <i class="fas fa-check-circle"></i> Đặt hàng
                     </button>
-                    <a href="@Url.Action("Index", "Cart")" class="btn btn-secondary btn-block">
+
+                    <a href="@Url.Action("Index","Cart")" class="btn btn-secondary btn-block">
                         <i class="fas fa-arrow-left"></i> Quay lại giỏ hàng
                     </a>
+
                 </div>
             </div>
         </div>

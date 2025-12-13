@@ -97,7 +97,7 @@
         <div class="form-card">
             @using (Html.BeginForm("EditProduct", "Admin", FormMethod.Post))
             {
-                @Html.AntiForgeryToken() <!-- 🔥 THÊM TOKEN -->
+                @Html.AntiForgeryToken() <!--  THÊM TOKEN -->
                 @Html.HiddenFor(m => m.ProductID)
 
                 <div class="row">

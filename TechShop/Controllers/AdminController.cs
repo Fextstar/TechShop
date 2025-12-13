@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
+using System.Web;
 using System.Web.Mvc;
 using TechShop.Models;
 using TechShop.Models.User___Authentication;
@@ -117,23 +119,34 @@ namespace TechShop.Controllers
         }
 
         [HttpPost]
-        public ActionResult CreateProduct(Product model, string ImageURL)
+        public ActionResult CreateProduct(Product model, HttpPostedFileBase ImageFile)
         {
             if (ModelState.IsValid)
             {
-                // Lưu sản phẩm trước
                 db.Products.Add(model);
                 db.SaveChanges();
 
-                // Lưu ảnh
-                if (!string.IsNullOrEmpty(ImageURL))
+                if (ImageFile != null && ImageFile.ContentLength > 0)
                 {
+                    string folderPath = Server.MapPath("~/Content/Uploads/Products/");
+                    if (!Directory.Exists(folderPath))
+                        Directory.CreateDirectory(folderPath);
+
+                    string fileName = Path.GetFileNameWithoutExtension(ImageFile.FileName);
+                    string extension = Path.GetExtension(ImageFile.FileName);
+                    string newFileName = $"{fileName}_{DateTime.Now.Ticks}{extension}";
+
+                    string fullPath = Path.Combine(folderPath, newFileName);
+                    ImageFile.SaveAs(fullPath);
+
                     var img = new ProductImage
                     {
                         ProductID = model.ProductID,
-                        ImageURL = ImageURL,
-                        IsPrimary = true
+                        ImageURL = "/Content/Uploads/Products/" + newFileName,
+                        IsPrimary = true,
+                        CreatedDate = DateTime.Now
                     };
+
                     db.ProductImages.Add(img);
                     db.SaveChanges();
                 }
@@ -143,6 +156,7 @@ namespace TechShop.Controllers
 
             return View(model);
         }
+
 
 
         // GET: Admin/EditProduct/5
