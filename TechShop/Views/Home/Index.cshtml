@@ -12,7 +12,7 @@
     </ol>
     <div class="carousel-inner">
         <div class="carousel-item active">
-            <img src="~/Content/Images/banner1.jpg" class="d-block w-100" alt="Banner 1" style="height: 400px; object-fit: cover;">
+            <img src="~/Content/Images/banner1.png" class="d-block w-100" alt="Banner 1" style="height: 400px; object-fit: cover;">
             <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 p-3">
                 <h3>Thiết bị máy tính chính hãng</h3>
                 <p>Giá tốt nhất thị trường</p>
@@ -77,7 +77,7 @@
             <div class="col-md-3 col-sm-6 mb-4">
                 <div class="card h-100 product-card">
                     <a href="@Url.Action("ProductDetail", "Home", new { id = product.ProductID })">
-                        <img src="@product.PrimaryImageUrl"
+                        <img src="@product.PrimaryImageURL"
                              class="card-img-top"
                              alt="@product.ProductName"
                              style="height: 200px; object-fit: cover;">

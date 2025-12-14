@@ -164,7 +164,7 @@
                         @foreach (var item in cart)
                         {
                             <div class="d-flex mb-3 pb-3 border-bottom">
-                                <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/Content/Images/no-image.jpg" : item.ImageUrl)"
+                                <img src="@(string.IsNullOrEmpty(item.ImageURL) ? "/Content/Images/no-image.jpg" : item.ImageURL)"
                                      alt="@item.ProductName"
                                      style="width: 60px; height: 60px; object-fit: cover;"
                                      class="mr-3 rounded">

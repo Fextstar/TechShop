@@ -14,7 +14,9 @@
             <div class="card shadow-sm">
 
                 <!-- Thumbnail -->
-                <img src="@post.ThumbnailURL" class="card-img-top" style="height:200px; object-fit:cover" />
+                <img src="@post.ThumbnailURL"
+                     class="card-img-top"
+                     style="height:200px; object-fit:cover" />
 
                 <div class="card-body">
                     <h5 class="card-title">@post.Title</h5>
@@ -24,10 +26,17 @@
                         @post.PublishedDate?.ToString("dd/MM/yyyy")
                     </p>
 
+                    <!-- CONTENT PREVIEW (FIXED) -->
                     <p class="card-text" style="height: 60px; overflow: hidden;">
-                        @(post.Content != null ?
-                              Html.Raw(post.Content.Length > 80 ? post.Content.Substring(0, 80) + "..." : post.Content)
-                              : "Không có nội dung.")
+                        @(
+                            post.Content != null
+                                ? Html.Raw(
+                                    post.Content.Length > 80
+                                        ? post.Content.Substring(0, 80) + "..."
+                                        : post.Content
+                                  )
+                                : Html.Raw("Không có nội dung.")
+                        )
                     </p>
 
                     <a href="@Url.Action("Detail", "Posts", new { id = post.PostID })"
@@ -49,20 +58,29 @@
 
             <!-- Prev -->
             <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1 })">‹</a>
+                <a class="page-link"
+                   href="@Url.Action("Index", new { page = currentPage - 1 })">
+                    ‹
+                </a>
             </li>
 
             <!-- Page Numbers -->
             @for (int i = 1; i <= totalPages; i++)
             {
                 <li class="page-item @(i == currentPage ? "active" : "")">
-                    <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
+                    <a class="page-link"
+                       href="@Url.Action("Index", new { page = i })">
+                        @i
+                    </a>
                 </li>
             }
 
             <!-- Next -->
             <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
-                <a class="page-link" href="@Url.Action("Index", new { page = currentPage + 1 })">›</a>
+                <a class="page-link"
+                   href="@Url.Action("Index", new { page = currentPage + 1 })">
+                    ›
+                </a>
             </li>
 
         </ul>

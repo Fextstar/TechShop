@@ -72,7 +72,7 @@
                     <div class="col-md-4 col-sm-6 mb-4">
                         <div class="card h-100 product-card">
                             <a href="@Url.Action("ProductDetail", "Home", new { id = product.ProductID })">
-                                <img src="@(string.IsNullOrEmpty(product.PrimaryImageUrl) ? "/Content/Images/no-image.jpg" : product.PrimaryImageUrl)"
+                                <img src="@(string.IsNullOrEmpty(product.PrimaryImageURL) ? "/Content/Images/no-image.jpg" : product.PrimaryImageURL)"
                                      class="card-img-top"
                                      alt="@product.ProductName"
                                      style="height: 200px; object-fit: cover;">

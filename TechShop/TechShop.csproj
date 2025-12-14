@@ -189,6 +189,9 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
+    <Content Include="Content\Images\banner1.png" />
+    <Content Include="Content\Images\banner2.jpg" />
+    <Content Include="Content\Images\banner3.jpg" />
     <Content Include="Content\PagedList.css" />
     <Content Include="Content\Uploads\Posts\welcome.jpg" />
     <Content Include="favicon.ico" />
@@ -250,17 +253,17 @@
     <Content Include="Views\Admin\Categories.cshtml" />
     <Content Include="Views\Admin\CreateCategory.cshtml" />
     <Content Include="Views\Admin\EditCategory.cshtml" />
+    <Content Include="Views\Shared\_AdminLayout.cshtml" />
+    <Content Include="Views\Admin\Statistics.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Content\css\" />
-    <Folder Include="Content\Images\" />
     <Folder Include="Content\Uploads\Brands\" />
     <Folder Include="Content\Uploads\Categories\" />
     <Folder Include="Content\Uploads\Products\" />
     <Folder Include="Content\Uploads\Users\" />
     <Folder Include="Views\Checkout\" />
-    <Folder Include="Views\Products\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.rtl.min.css.map" />

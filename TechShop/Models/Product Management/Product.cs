@@ -42,8 +42,10 @@ namespace TechShop.Models
 
         [Required(ErrorMessage = "Giá không được để trống")]
         [Display(Name = "Giá gốc")]
-        [Range(0, double.MaxValue, ErrorMessage = "Giá phải lớn hơn 0")]
+        [Range(0, (double)decimal.MaxValue, ErrorMessage = "Giá phải lớn hơn hoặc bằng 0")]
+        [DisplayFormat(DataFormatString = "{0:N0} đ", ApplyFormatInEditMode = false)]
         public decimal Price { get; set; }
+
 
         [Display(Name = "Giá khuyến mãi")]
         [Range(0, double.MaxValue, ErrorMessage = "Giá khuyến mãi phải lớn hơn 0")]
@@ -118,7 +120,7 @@ namespace TechShop.Models
         /// Lấy URL ảnh chính của sản phẩm
         /// </summary>
         [NotMapped]
-        public string PrimaryImageUrl
+        public string PrimaryImageURL
         {
             get
             {

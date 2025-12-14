@@ -1,0 +1,516 @@
+﻿@model dynamic
+@{
+    ViewBag.Title = "Thống kê doanh thu";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f6fa; }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-header { text-align: center; margin-bottom: 30px; }
+        .sidebar-header .logo {
+            font-size: 22px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .menu-item {
+            padding: 12px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            text-decoration: none;
+            font-size: 15px;
+            border-left: 3px solid transparent;
+            transition: 0.3s;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background: rgba(255,255,255,0.12);
+            border-left-color: #fff;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+            background: #f5f6fa;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: #fff;
+            padding: 20px 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title { font-size: 22px; font-weight: 700; margin: 0; }
+
+        /* Period Filter */
+        .period-filter {
+            display: flex;
+            gap: 10px;
+        }
+
+        .period-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .period-btn:hover, .period-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .stat-info h3 {
+            color: #7f8c8d;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .stat-info .number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .stat-icon.blue { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .stat-icon.green { background: linear-gradient(135deg, #11998e, #38ef7d); }
+        .stat-icon.orange { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .stat-icon.purple { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .stat-icon.red { background: linear-gradient(135deg, #fa709a, #fee140); }
+        .stat-icon.teal { background: linear-gradient(135deg, #30cfd0, #330867); }
+
+        /* Charts */
+        .chart-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        .chart-header {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; }
+        thead tr { background: #f0f2f5; }
+        th, td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; text-align: left; }
+        tr:hover { background: #f8f9fa; }
+
+        .text-right { text-align: right; }
+        .text-danger { color: #dc3545; font-weight: bold; }
+        .text-success { color: #28a745; font-weight: bold; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        @@media (max-width: 768px) {
+            .main-content { margin-left: 0; padding: 15px; }
+            .sidebar { display: none; }
+            .grid-2 { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-laptop"></i>
+                <span>TechShop</span>
+            </div>
+        </div>
+
+        <div class="sidebar-menu">
+            <a href="@Url.Action("Index", "Admin")" class="menu-item active">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="@Url.Action("Products", "Admin")" class="menu-item">
+                <i class="fas fa-box"></i>
+                <span>Quản lý sản phẩm</span>
+            </a>
+            <a href="@Url.Action("Orders", "Admin")" class="menu-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Quản lý đơn hàng</span>
+            </a>
+            <a href="@Url.Action("Users", "Admin")" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span>Quản lý người dùng</span>
+            </a>
+            <a href="@Url.Action("Categories", "Admin")" class="menu-item">
+                <i class="fas fa-tags"></i>
+                <span>Danh mục</span>
+            </a>
+            <a href="@Url.Action("Brands", "Admin")" class="menu-item">
+                <i class="fas fa-copyright"></i>
+                <span>Thương hiệu</span>
+            </a>
+            <a href="@Url.Action("Statistics", "Admin")" class="menu-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Thống kê</span>
+            </a>
+            <a href="@Url.Action("Settings", "Admin")" class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span>Cấu hình</span>
+            </a>
+            <a href="@Url.Action("Index", "Home")" class="menu-item">
+                <i class="fas fa-home"></i>
+                <span>Về trang chủ</span>
+            </a>
+            <a href="@Url.Action("Logout", "Account")" class="menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Đăng xuất</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <div class="topbar">
+            <h1 class="page-title">
+                <i class="fas fa-chart-bar"></i> Thống kê doanh thu
+            </h1>
+
+            <div class="period-filter">
+                <a href="@Url.Action("Statistics", new { period = "week" })"
+                   class="period-btn @(Model.Period == "week" ? "active" : "")">
+                    7 Ngày
+                </a>
+                <a href="@Url.Action("Statistics", new { period = "month" })"
+                   class="period-btn @(Model.Period == "month" ? "active" : "")">
+                    30 Ngày
+                </a>
+                <a href="@Url.Action("Statistics", new { period = "year" })"
+                   class="period-btn @(Model.Period == "year" ? "active" : "")">
+                    Năm
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>Tổng doanh thu</h3>
+                    <div class="number">@Model.TotalRevenue.ToString("N0") đ</div>
+                </div>
+                <div class="stat-icon blue">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>Tổng đơn hàng</h3>
+                    <div class="number">@Model.TotalOrders.ToString("N0")</div>
+                </div>
+                <div class="stat-icon green">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>Đơn hoàn thành</h3>
+                    <div class="number">@Model.CompletedOrders.ToString("N0")</div>
+                </div>
+                <div class="stat-icon purple">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>Khách hàng</h3>
+                    <div class="number">@Model.TotalCustomers.ToString("N0")</div>
+                </div>
+                <div class="stat-icon orange">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>Đơn chờ xử lý</h3>
+                    <div class="number">@Model.PendingOrders.ToString("N0")</div>
+                </div>
+                <div class="stat-icon red">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>Sản phẩm sắp hết</h3>
+                    <div class="number">@Model.LowStockProducts.ToString("N0")</div>
+                </div>
+                <div class="stat-icon teal">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue Chart -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <i class="fas fa-chart-line"></i> Biểu đồ doanh thu
+            </div>
+            <canvas id="revenueChart" height="80"></canvas>
+        </div>
+
+        <!-- Grid 2 columns -->
+        <div class="grid-2">
+            <!-- Top Products -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <i class="fas fa-star"></i> Top 10 sản phẩm bán chạy
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th class="text-right">Số lượng</th>
+                            <th class="text-right">Doanh thu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.TopProducts)
+                        {
+                            <tr>
+                                <td><strong>@item.ProductName</strong></td>
+                                <td class="text-right">@item.TotalQuantity</td>
+                                <td class="text-right text-danger">@item.TotalRevenue.ToString("N0") đ</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Category Stats -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <i class="fas fa-tags"></i> Doanh thu theo danh mục
+                </div>
+                <canvas id="categoryChart" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- Order Status Stats -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <i class="fas fa-list"></i> Thống kê theo trạng thái đơn hàng
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Trạng thái</th>
+                        <th class="text-right">Số đơn</th>
+                        <th class="text-right">Tổng tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.OrderStatusStats)
+                    {
+                        <tr>
+                            <td><strong>@item.StatusName</strong></td>
+                            <td class="text-right">@item.Count.ToString("N0")</td>
+                            <td class="text-right text-success">@item.TotalAmount.ToString("N0") đ</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Revenue Chart
+        const revenueData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.RevenueData));
+
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: revenueData.map(d => d.Date),
+                datasets: [{
+                    label: 'Doanh thu (đ)',
+                    data: revenueData.map(d => d.Revenue),
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    borderWidth: 3
+                }, {
+                    label: 'Số đơn',
+                    data: revenueData.map(d => d.Orders),
+                    borderColor: '#38ef7d',
+                    backgroundColor: 'rgba(56, 239, 125, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    borderWidth: 2,
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                interaction: { intersect: false, mode: 'index' },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: 'Doanh thu (đ)' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: { display: true, text: 'Số đơn hàng' },
+                        grid: { drawOnChartArea: false }
+                    }
+                },
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) label += ': ';
+                                if (context.parsed.y !== null) {
+                                    if (context.dataset.label === 'Doanh thu (đ)') {
+                                        label += context.parsed.y.toLocaleString('vi-VN') + ' đ';
+                                    } else {
+                                        label += context.parsed.y;
+                                    }
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Category Chart
+        const categoryData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.CategoryStats));
+
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: categoryData.map(d => d.CategoryName),
+                datasets: [{
+                    data: categoryData.map(d => d.TotalRevenue),
+                    backgroundColor: [
+                        '#667eea', '#38ef7d', '#f5576c', '#00f2fe',
+                        '#ffa502', '#ff6b6b', '#4ecdc4', '#95e1d3'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${label}: ${value.toLocaleString('vi-VN')} đ (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

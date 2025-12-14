@@ -112,7 +112,7 @@ namespace TechShop.Controllers
                         ProductName = product.ProductName,
                         Price = product.DisplayPrice, // Ưu tiên giá giảm
                         Quantity = quantity,
-                        ImageUrl = primaryImage?.ImageURL ?? "/Content/Images/no-image.jpg"
+                        ImageURL = primaryImage?.ImageURL ?? "/Content/Images/no-image.jpg"
                     });
                 }
 

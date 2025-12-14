@@ -179,7 +179,7 @@ namespace TechShop.Controllers
                     id = p.ProductID,
                     label = p.ProductName,
                     price = p.Price,
-                    image = p.PrimaryImageUrl
+                    image = p.PrimaryImageURL
                 })
                 .ToList();
 

@@ -2,7 +2,6 @@
 
 @{
     ViewBag.Title = "Thêm sản phẩm mới";
-    string fullName = Session["FullName"]?.ToString() ?? "Admin";
 }
 
 <!DOCTYPE html>
@@ -15,12 +14,19 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
 
     <style>
+        /* ===== RESET FIX TRÀN ===== */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, sans-serif;
             background: #f5f6fa;
             margin: 0;
+            overflow-x: hidden;
         }
 
+        /* ===== SIDEBAR ===== */
         .sidebar {
             position: fixed;
             width: 260px;
@@ -42,11 +48,13 @@
             border-left: 3px solid transparent;
         }
 
-            .menu-item:hover, .menu-item.active {
+            .menu-item:hover,
+            .menu-item.active {
                 background: rgba(255,255,255,0.1);
                 border-left-color: #fff;
             }
 
+        /* ===== MAIN ===== */
         .main-content {
             margin-left: 260px;
             padding: 25px;
@@ -71,19 +79,20 @@
             max-width: 900px;
         }
 
+        /* ===== FORM ===== */
         .form-group {
             margin-bottom: 18px;
         }
 
         label {
             font-weight: 600;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
             display: block;
-            color: #333;
         }
 
         .form-control {
             width: 100%;
+            max-width: 100%;
             padding: 12px 15px;
             border-radius: 8px;
             border: 2px solid #e0e0e0;
@@ -95,6 +104,20 @@
                 outline: none;
             }
 
+        /* ===== GRID FIX ===== */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-left: -7.5px;
+            margin-right: -7.5px;
+        }
+
+        .col-6 {
+            width: 50%;
+            padding: 0 7.5px;
+        }
+
+        /* ===== BUTTON ===== */
         .btn {
             padding: 10px 20px;
             border-radius: 8px;
@@ -111,56 +134,40 @@
         .btn-secondary {
             background: #e0e0e0;
         }
-
-        .row {
-            display: flex;
-            gap: 15px;
-        }
-
-        .col-6 {
-            flex: 1;
-        }
     </style>
 </head>
 
 <body>
 
-    <!-- Sidebar -->
+    <!-- SIDEBAR -->
     <div class="sidebar">
-        <a href="@Url.Action("Index", "Admin")" class="menu-item">
-            <i class="fas fa-chart-line"></i> Dashboard
-        </a>
-        <a href="@Url.Action("Products", "Admin")" class="menu-item active">
-            <i class="fas fa-box"></i> Quản lý sản phẩm
-        </a>
-        <a href="@Url.Action("Orders", "Admin")" class="menu-item">
-            <i class="fas fa-shopping-cart"></i> Đơn hàng
-        </a>
-        <a href="@Url.Action("Users", "Admin")" class="menu-item">
-            <i class="fas fa-users"></i> Người dùng
-        </a>
-        <a href="@Url.Action("Logout", "Account")" class="menu-item">
-            <i class="fas fa-sign-out-alt"></i> Đăng xuất
-        </a>
+        <div class="sidebar-menu">
+            <a href="@Url.Action("Products", "Admin")" class="menu-item active">
+                <i class="fas fa-box"></i> Quản lý sản phẩm
+            </a>
+            <a href="@Url.Action("Index", "Home")" class="menu-item">
+                <i class="fas fa-home"></i> Trang chủ
+            </a>
+        </div>
     </div>
 
-    <!-- Main -->
+    <!-- MAIN -->
     <div class="main-content">
 
         <div class="topbar">
             <h2><i class="fas fa-plus"></i> Thêm sản phẩm mới</h2>
-
             <a href="@Url.Action("Products", "Admin")" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Quay lại
             </a>
         </div>
 
         <div class="form-card">
-            @using (Html.BeginForm("CreateProduct", "Admin", FormMethod.Post))
+            @using (Html.BeginForm("CreateProduct", "Admin", FormMethod.Post, new { enctype = "multipart/form-data" }))
             {
+                @Html.AntiForgeryToken()
+
                 <div class="row">
                     <div class="col-6">
-
                         <div class="form-group">
                             <label>Tên sản phẩm</label>
                             @Html.TextBoxFor(m => m.ProductName, new { @class = "form-control" })
@@ -170,58 +177,12 @@
                             <label>SKU</label>
                             @Html.TextBoxFor(m => m.SKU, new { @class = "form-control" })
                         </div>
-
-                        <div class="form-group">
-                            <label>Danh mục</label>
-                            @Html.DropDownListFor(m => m.CategoryID,
-                                (SelectList)ViewBag.Categories,
-                                "-- Chọn danh mục --",
-                                new { @class = "form-control" })
-                        </div>
-
-                        <div class="form-group">
-                            <label>Thương hiệu</label>
-                            @Html.DropDownListFor(m => m.BrandID,
-                                (SelectList)ViewBag.Brands,
-                                "-- Chọn thương hiệu --",
-                                new { @class = "form-control" })
-                        </div>
-
-                        <div class="form-group">
-                            <label>Giá</label>
-                            @Html.TextBoxFor(m => m.Price, new { @class = "form-control", type = "number" })
-                        </div>
-
-                        <div class="form-group">
-                            <label>Giá giảm (nếu có)</label>
-                            @Html.TextBoxFor(m => m.DiscountPrice, new { @class = "form-control", type = "number" })
-                        </div>
                     </div>
 
                     <div class="col-6">
                         <div class="form-group">
-                            <label>Tồn kho</label>
-                            @Html.TextBoxFor(m => m.StockQuantity, new { @class = "form-control", type = "number" })
-                        </div>
-
-                        <div class="form-group">
-                            <label>Ảnh (URL)</label>
-                            <input type="text" name="ImageURL" class="form-control" />
-                        </div>
-
-                        <div class="form-group">
-                            <label>Mô tả</label>
-                            @Html.TextAreaFor(m => m.Description, new { @class = "form-control", rows = 4 })
-                        </div>
-
-                        <div class="form-group">
-                            <label>Trạng thái</label><br />
-                            @Html.CheckBoxFor(m => m.IsActive) Hoạt động
-                        </div>
-
-                        <div class="form-group">
-                            <label>Nổi bật</label><br />
-                            @Html.CheckBoxFor(m => m.IsFeatured) Sản phẩm nổi bật
+                            <label>Giá</label>
+                            @Html.TextBoxFor(m => m.Price, new { @class = "form-control", type = "number" })
                         </div>
                     </div>
                 </div>
