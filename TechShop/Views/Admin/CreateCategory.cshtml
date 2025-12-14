@@ -1,0 +1,31 @@
+﻿@model TechShop.Models.Category
+
+@{
+    ViewBag.Title = "Thêm danh mục";
+}
+
+<h2>Thêm danh mục mới</h2>
+
+@using (Html.BeginForm("CreateCategory", "Admin", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        <label>Tên danh mục</label>
+        @Html.TextBoxFor(m => m.CategoryName, new { @class = "form-control", required = "required" })
+        @Html.ValidationMessageFor(m => m.CategoryName)
+    </div>
+
+    <div class="form-group">
+        <label>Mô tả</label>
+        @Html.TextAreaFor(m => m.Description, new { @class = "form-control", rows = 4 })
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i> Lưu
+    </button>
+
+    <a href="@Url.Action("Categories", "Admin")" class="btn btn-secondary">
+        Quay lại
+    </a>
+}

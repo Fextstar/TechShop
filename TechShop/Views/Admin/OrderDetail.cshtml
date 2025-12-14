@@ -1,0 +1,211 @@
+﻿@model TechShop.Models.Order
+
+@{
+    ViewBag.Title = "Chi tiết đơn hàng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="@Url.Action("Index", "Admin")">Dashboard</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="@Url.Action("Orders", "Admin")">Quản lý đơn hàng</a>
+        </li>
+        <li class="breadcrumb-item active">@Model.OrderCode</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <!-- LEFT -->
+    <div class="col-md-8">
+
+        <!-- Thông tin đơn hàng -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle"></i> Thông tin đơn hàng
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Mã đơn:</strong> @Model.OrderCode</p>
+                        <p><strong>Ngày đặt:</strong> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+                        <p>
+                            <strong>Trạng thái:</strong>
+                            <span class="badge badge-info">@Model.Status.StatusName</span>
+                        </p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <p><strong>Khách hàng:</strong> @Model.CustomerName</p>
+                        <p><strong>SĐT:</strong> @Model.CustomerPhone</p>
+                        <p><strong>Email:</strong> @Model.CustomerEmail</p>
+                        <p><strong>Thanh toán:</strong> @Model.PaymentMethod</p>
+                        <p>
+                            <strong>TT thanh toán:</strong>
+                            @if (Model.PaymentStatus == "Đã thanh toán")
+                            {
+                                <span class="badge badge-success">@Model.PaymentStatus</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-secondary">@Model.PaymentStatus</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Note))
+                {
+                    <div class="alert alert-info mt-3">
+                        <strong>Ghi chú:</strong> @Model.Note
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.CancelReason))
+                {
+                    <div class="alert alert-danger mt-3">
+                        <strong>Lý do hủy:</strong> @Model.CancelReason
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Thông tin giao hàng -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-shipping-fast"></i> Thông tin giao hàng
+                </h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Địa chỉ:</strong> @Model.ShippingAddress</p>
+
+                @if (Model.ShippedDate.HasValue)
+                {
+                    <p><strong>Ngày giao:</strong> @Model.ShippedDate.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                }
+
+                @if (Model.DeliveredDate.HasValue)
+                {
+                    <p><strong>Ngày nhận:</strong> @Model.DeliveredDate.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                }
+            </div>
+        </div>
+
+        <!-- Danh sách sản phẩm -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-box"></i> Sản phẩm (@Model.OrderDetails.Count)
+                </h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-sm">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Đơn giá</th>
+                            <th>Số lượng</th>
+                            <th>Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.OrderDetails)
+                        {
+                            <tr>
+                                <td>@item.ProductName</td>
+                                <td>@item.UnitPrice.ToString("N0") đ</td>
+                                <td>@item.Quantity</td>
+                                <td class="text-danger font-weight-bold">
+                                    @item.TotalPrice.ToString("N0") đ
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="col-md-4">
+        <div class="card sticky-top" style="top:20px;">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0">
+                    <i class="fas fa-receipt"></i> Tổng thanh toán
+                </h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr>
+                        <td>Tạm tính:</td>
+                        <td class="text-right">@Model.TotalAmount.ToString("N0") đ</td>
+                    </tr>
+                    <tr>
+                        <td>Phí ship:</td>
+                        <td class="text-right">@Model.ShippingFee.ToString("N0") đ</td>
+                    </tr>
+                    @if (Model.DiscountAmount > 0)
+                    {
+                        <tr class="text-success">
+                            <td>Giảm giá:</td>
+                            <td class="text-right">-@Model.DiscountAmount.ToString("N0") đ</td>
+                        </tr>
+                    }
+                    <tr class="border-top">
+                        <td><strong>Tổng cộng:</strong></td>
+                        <td class="text-right">
+                            <h4 class="text-danger mb-0">
+                                @Model.FinalAmount.ToString("N0") đ
+                            </h4>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Cập nhật trạng thái -->
+                <div class="form-group">
+                    <label>Cập nhật trạng thái</label>
+                    <select id="statusId" class="form-control">
+                        @foreach (var s in ViewBag.OrderStatuses as List<TechShop.Models.OrderStatus>)
+                        {
+                            <option value="@s.StatusID"
+                                    @(s.StatusID == Model.StatusID ? "selected" : "")>
+                                @s.StatusName
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <button class="btn btn-primary btn-block"
+                        onclick="updateStatus(@Model.OrderID)">
+                    <i class="fas fa-save"></i> Cập nhật trạng thái
+                </button>
+
+                <a href="@Url.Action("Orders", "Admin")"
+                   class="btn btn-secondary btn-block mt-2">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+    function updateStatus(orderId) {
+        var statusId = $("#statusId").val();
+
+        $.post('@Url.Action("UpdateOrderStatus", "Admin")',
+            { orderId: orderId, statusId: statusId },
+            function (res) {
+                alert(res.message);
+                if (res.success) location.reload();
+            }
+        );
+    }
+    </script>
+}

@@ -1,0 +1,237 @@
+﻿@model List<TechShop.Models.Category>
+
+@{
+    ViewBag.Title = "Danh mục sản phẩm - Quản trị";
+    string fullName = Session["FullName"]?.ToString() ?? "Admin";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6fa;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            gap: 10px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: rgba(255,255,255,0.1);
+            border-left-color: white;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 20px;
+        }
+
+        .topbar {
+            background: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .table-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f5f6fa;
+            padding: 12px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background: #fafafa;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-warning {
+            background: #f1c40f;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-laptop"></i> TechShop
+            </div>
+        </div>
+
+        <div class="sidebar-menu">
+            <a href="@Url.Action("Index","Admin")">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="@Url.Action("Products","Admin")">
+                <i class="fas fa-box"></i> Quản lý sản phẩm
+            </a>
+            <a href="@Url.Action("Orders","Admin")">
+                <i class="fas fa-shopping-cart"></i> Quản lý đơn hàng
+            </a>
+            <a href="@Url.Action("Categories","Admin")" class="active">
+                <i class="fas fa-tags"></i> Danh mục
+            </a>
+            <a href="@Url.Action("Index","Home")">
+                <i class="fas fa-home"></i> Về trang chủ
+            </a>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+        <div class="topbar">
+            <h1 class="page-title">Danh mục sản phẩm</h1>
+            <span>Xin chào, <strong>@fullName</strong></span>
+        </div>
+
+        <div style="margin-bottom:15px;">
+            <a href="@Url.Action("CreateCategory","Admin")" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Thêm danh mục
+            </a>
+        </div>
+
+        <div class="table-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Tên danh mục</th>
+                        <th>Mô tả</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        int i = 1;
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@i</td>
+                                <td>@item.CategoryName</td>
+                                <td>@item.Description</td>
+                                <td>
+                                    @(item.IsActive ? "Hoạt động" : "Ẩn")
+                                </td>
+                                <td>
+                                    <a href="@Url.Action("EditCategory","Admin", new { id = item.CategoryID })"
+                                       class="btn btn-warning">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+
+                                    <button class="btn btn-danger"
+                                            onclick="deleteCategory(@item.CategoryID)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            i++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" style="text-align:center;">Không có danh mục nào</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function deleteCategory(id) {
+            if (!confirm("Bạn có chắc muốn xóa danh mục này?")) return;
+
+            $.post('@Url.Action("DeleteCategory","Admin")',
+                { id: id },
+                function (res) {
+                    alert(res.message);
+                    if (res.success) location.reload();
+                }
+            );
+        }
+    </script>
+</body>
+</html>

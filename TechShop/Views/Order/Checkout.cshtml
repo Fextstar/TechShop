@@ -10,7 +10,24 @@
 
 <h2 class="mb-4"><i class="fas fa-credit-card"></i> Thanh toán</h2>
 
-@using (Html.BeginForm("Checkout", "Order", FormMethod.Post, new { @class = "needs-validation" }))
+@* Hiển thị lỗi validation *@
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        @Html.ValidationSummary(false, "Vui lòng kiểm tra lại thông tin:")
+    </div>
+}
+
+@* Hiển thị thông báo lỗi *@
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+}
+
+@using (Html.BeginForm("Checkout", "Order", FormMethod.Post, new { @id = "checkoutForm" }))
 {
     @Html.AntiForgeryToken()
 
@@ -24,32 +41,62 @@
                 <div class="card-body">
 
                     <div class="form-group">
-                        @Html.LabelFor(m => m.CustomerName)
-                        @Html.TextBoxFor(m => m.CustomerName, new { @class = "form-control", required = "required" })
-                        @Html.ValidationMessageFor(m => m.CustomerName, "", new { @class = "text-danger" })
+                        @Html.LabelFor(m => m.CustomerName, new { @class = "font-weight-bold" })
+                        <span class="text-danger">*</span>
+                        @Html.TextBoxFor(m => m.CustomerName, new
+                        {
+                            @class = "form-control",
+                            placeholder = "Nhập họ và tên",
+                            required = "required"
+                        })
+                        @Html.ValidationMessageFor(m => m.CustomerName, "", new { @class = "text-danger small" })
                     </div>
 
                     <div class="form-row">
                         <div class="form-group col-md-6">
-                            @Html.LabelFor(m => m.CustomerPhone)
-                            @Html.TextBoxFor(m => m.CustomerPhone, new { @class = "form-control", required = "required" })
-                            @Html.ValidationMessageFor(m => m.CustomerPhone, "", new { @class = "text-danger" })
+                            @Html.LabelFor(m => m.CustomerPhone, new { @class = "font-weight-bold" })
+                            <span class="text-danger">*</span>
+                            @Html.TextBoxFor(m => m.CustomerPhone, new
+                            {
+                                @class = "form-control",
+                                placeholder = "0xxxxxxxxx",
+                                required = "required",
+                                pattern = "[0-9]{10,11}"
+                            })
+                            @Html.ValidationMessageFor(m => m.CustomerPhone, "", new { @class = "text-danger small" })
                         </div>
                         <div class="form-group col-md-6">
-                            @Html.LabelFor(m => m.CustomerEmail)
-                            @Html.TextBoxFor(m => m.CustomerEmail, new { @class = "form-control", type = "email" })
+                            @Html.LabelFor(m => m.CustomerEmail, new { @class = "font-weight-bold" })
+                            @Html.TextBoxFor(m => m.CustomerEmail, new
+                            {
+                                @class = "form-control",
+                                type = "email",
+                                placeholder = "email@example.com"
+                            })
                         </div>
                     </div>
 
                     <div class="form-group">
-                        @Html.LabelFor(m => m.ShippingAddress)
-                        @Html.TextAreaFor(m => m.ShippingAddress, new { @class = "form-control", rows = 3, required = "required" })
-                        @Html.ValidationMessageFor(m => m.ShippingAddress, "", new { @class = "text-danger" })
+                        @Html.LabelFor(m => m.ShippingAddress, new { @class = "font-weight-bold" })
+                        <span class="text-danger">*</span>
+                        @Html.TextAreaFor(m => m.ShippingAddress, new
+                        {
+                            @class = "form-control",
+                            rows = 3,
+                            placeholder = "Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố",
+                            required = "required"
+                        })
+                        @Html.ValidationMessageFor(m => m.ShippingAddress, "", new { @class = "text-danger small" })
                     </div>
 
                     <div class="form-group">
-                        @Html.LabelFor(m => m.Note, "Ghi chú (tùy chọn)")
-                        @Html.TextAreaFor(m => m.Note, new { @class = "form-control", rows = 2 })
+                        @Html.LabelFor(m => m.Note, "Ghi chú (tùy chọn)", new { @class = "font-weight-bold" })
+                        @Html.TextAreaFor(m => m.Note, new
+                        {
+                            @class = "form-control",
+                            rows = 2,
+                            placeholder = "Ghi chú thêm về đơn hàng..."
+                        })
                     </div>
 
                 </div>
@@ -61,62 +108,123 @@
                     <h5 class="mb-0"><i class="fas fa-money-bill-wave"></i> Phương thức thanh toán</h5>
                 </div>
                 <div class="card-body">
-                    <div class="form-check mb-2">
-                        @Html.RadioButtonFor(m => m.PaymentMethod, "COD", new { @checked = "checked" })
-                        <label class="form-check-label">Thanh toán khi nhận hàng (COD)</label>
+                    <div class="form-check mb-3">
+                        @Html.RadioButtonFor(m => m.PaymentMethod, "COD", new
+                        {
+                            @class = "form-check-input",
+                            id = "paymentCOD",
+                            @checked = "checked"
+                        })
+                        <label class="form-check-label" for="paymentCOD">
+                            <strong>Thanh toán khi nhận hàng (COD)</strong><br>
+                            <small class="text-muted">Thanh toán bằng tiền mặt khi nhận hàng</small>
+                        </label>
                     </div>
-                    <div class="form-check mb-2">
-                        @Html.RadioButtonFor(m => m.PaymentMethod, "BankTransfer")
-                        <label class="form-check-label">Chuyển khoản ngân hàng</label>
+
+                    <div class="form-check mb-3">
+                        @Html.RadioButtonFor(m => m.PaymentMethod, "BankTransfer", new
+                        {
+                            @class = "form-check-input",
+                            id = "paymentBank"
+                        })
+                        <label class="form-check-label" for="paymentBank">
+                            <strong>Chuyển khoản ngân hàng</strong><br>
+                            <small class="text-muted">Chuyển khoản trước, giao hàng sau khi xác nhận</small>
+                        </label>
                     </div>
+
                     <div class="form-check">
-                        @Html.RadioButtonFor(m => m.PaymentMethod, "VNPay")
-                        <label class="form-check-label">VNPay (sắp ra mắt)</label>
+                        @Html.RadioButtonFor(m => m.PaymentMethod, "VNPay", new
+                        {
+                            @class = "form-check-input",
+                            id = "paymentVNPay",
+                            disabled = "disabled"
+                        })
+                        <label class="form-check-label text-muted" for="paymentVNPay">
+                            <strong>VNPay</strong><br>
+                            <small>Tính năng đang phát triển</small>
+                        </label>
                     </div>
+
+                    @Html.ValidationMessageFor(m => m.PaymentMethod, "", new { @class = "text-danger small d-block mt-2" })
                 </div>
             </div>
         </div>
 
         <!-- TÓM TẮT ĐƠN HÀNG -->
         <div class="col-md-5">
-            <div class="card">
+            <div class="card sticky-top" style="top: 20px;">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0"><i class="fas fa-shopping-bag"></i> Đơn hàng của bạn</h5>
                 </div>
                 <div class="card-body">
 
-                    @foreach (var item in cart)
-                    {
-                        <div class="d-flex mb-3 border-bottom pb-2">
-                            <img src="@item.ImageUrl" width="60" class="mr-3" />
-                            <div>
-                                <strong>@item.ProductName</strong><br />
-                                SL: @item.Quantity<br />
-                                <span class="text-danger">@item.TotalPrice.ToString("N0") đ</span>
+                    <!-- DANH SÁCH SẢN PHẨM -->
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        @foreach (var item in cart)
+                        {
+                            <div class="d-flex mb-3 pb-3 border-bottom">
+                                <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/Content/Images/no-image.jpg" : item.ImageUrl)"
+                                     alt="@item.ProductName"
+                                     style="width: 60px; height: 60px; object-fit: cover;"
+                                     class="mr-3 rounded">
+                                <div class="flex-grow-1">
+                                    <strong class="d-block">@item.ProductName</strong>
+                                    <small class="text-muted">SL: @item.Quantity × @item.Price.ToString("N0") đ</small><br>
+                                    <span class="text-danger font-weight-bold">@item.TotalPrice.ToString("N0") đ</span>
+                                </div>
                             </div>
-                        </div>
-                    }
+                        }
+                    </div>
 
-                    <table class="table table-sm mt-3">
-                        <tr><td>Tạm tính</td><td class="text-right">@totalAmount.ToString("N0") đ</td></tr>
-                        <tr><td>Phí ship</td><td class="text-right">@shippingFee.ToString("N0") đ</td></tr>
+                    <!-- TỔNG TIỀN -->
+                    <table class="table table-sm mt-3 mb-0">
+                        <tr>
+                            <td>Tạm tính:</td>
+                            <td class="text-right"><strong>@totalAmount.ToString("N0") đ</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Phí vận chuyển:</td>
+                            <td class="text-right">
+                                @if (shippingFee == 0)
+                                {
+                                    <span class="text-success">Miễn phí</span>
+                                }
+                                else
+                                {
+                                    @shippingFee.ToString("N0") <text>đ</text>
+                                }
+                            </td>
+                        </tr>
+                        @if (discountAmount > 0)
+                        {
+                            <tr class="text-success">
+                                <td>Giảm giá:</td>
+                                <td class="text-right">-@discountAmount.ToString("N0") đ</td>
+                            </tr>
+                        }
                         <tr class="border-top">
-                            <td><strong>Tổng cộng</strong></td>
-                            <td class="text-right text-danger">
-                                <strong>@finalAmount.ToString("N0") đ</strong>
+                            <td><strong>Tổng cộng:</strong></td>
+                            <td class="text-right">
+                                <h4 class="text-danger mb-0">@finalAmount.ToString("N0") đ</h4>
                             </td>
                         </tr>
                     </table>
 
                     <!-- NÚT ĐẶT HÀNG -->
-                    <button type="submit" class="btn btn-success btn-block btn-lg mt-3" id="placeOrderBtn">
-                        <i class="fas fa-check-circle"></i> Đặt hàng
+                    <button type="submit" class="btn btn-success btn-block btn-lg mt-3" id="btnSubmitOrder">
+                        <i class="fas fa-check-circle"></i> Đặt hàng ngay
                     </button>
 
                     <a href="@Url.Action("Index","Cart")" class="btn btn-secondary btn-block">
                         <i class="fas fa-arrow-left"></i> Quay lại giỏ hàng
                     </a>
 
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-lock"></i> Thông tin của bạn được bảo mật
+                        </small>
+                    </div>
                 </div>
             </div>
         </div>
@@ -125,4 +233,106 @@
 
 @section scripts {
     @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        $(document).ready(function() {
+            // XỬ LÝ SUBMIT FORM
+            $('#checkoutForm').on('submit', function(e) {
+                console.log('Form đang được submit...');
+
+                // Validation cơ bản
+                var customerName = $('#CustomerName').val().trim();
+                var customerPhone = $('#CustomerPhone').val().trim();
+                var shippingAddress = $('#ShippingAddress').val().trim();
+                var paymentMethod = $('input[name="PaymentMethod"]:checked').val();
+
+                // Kiểm tra thông tin bắt buộc
+                if (!customerName) {
+                    alert('Vui lòng nhập họ tên!');
+                    $('#CustomerName').focus();
+                    e.preventDefault();
+                    return false;
+                }
+
+                if (!customerPhone) {
+                    alert('Vui lòng nhập số điện thoại!');
+                    $('#CustomerPhone').focus();
+                    e.preventDefault();
+                    return false;
+                }
+
+                if (!shippingAddress) {
+                    alert('Vui lòng nhập địa chỉ giao hàng!');
+                    $('#ShippingAddress').focus();
+                    e.preventDefault();
+                    return false;
+                }
+
+                if (!paymentMethod) {
+                    alert('Vui lòng chọn phương thức thanh toán!');
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Xác nhận đặt hàng
+                var confirmMsg = 'Xác nhận đặt hàng với tổng tiền: @finalAmount.ToString("N0") đ?';
+                if (!confirm(confirmMsg)) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Disable button để tránh double submit
+                $('#btnSubmitOrder').prop('disabled', true)
+                    .html('<i class="fas fa-spinner fa-spin"></i> Đang xử lý...');
+
+                console.log('Form validation passed, submitting...');
+                return true;
+            });
+
+            // Auto-fill test data (CHỈ DÙNG KHI DEV - XÓA KHI PRODUCTION)
+            // $('#CustomerName').val('Nguyễn Văn A');
+            // $('#CustomerPhone').val('0123456789');
+            // $('#CustomerEmail').val('test@example.com');
+            // $('#ShippingAddress').val('123 Đường ABC, Phường XYZ, Quận 1, TP.HCM');
+        });
+    </script>
+
+    <style>
+        /* Highlight required fields */
+        .form-group label .text-danger {
+            margin-left: 3px;
+        }
+
+        /* Style for validation errors */
+        .text-danger.small {
+            display: block;
+            margin-top: 5px;
+        }
+
+        /* Payment method cards */
+        .form-check {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+            .form-check:hover {
+                background: #f8f9fa;
+                border-color: #28a745;
+            }
+
+        .form-check-input:checked ~ .form-check-label {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        /* Sticky sidebar on desktop */
+        @@media (min-width: 768px) {
+            .sticky-top {
+                position: sticky;
+                top: 20px;
+            }
+        }
+    </style>
 }

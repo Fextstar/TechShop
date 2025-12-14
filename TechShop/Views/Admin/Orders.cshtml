@@ -1,75 +1,358 @@
 ﻿@model List<TechShop.Models.Order>
-
 @{
     ViewBag.Title = "Quản lý đơn hàng";
+    Layout = null;
 }
 
-<div class="main-content">
-    <h2 class="page-title"><i class="fas fa-shopping-cart"></i> Quản lý đơn hàng</h2>
-
-    <div class="filter-section">
-        @using (Html.BeginForm("Orders", "Admin", FormMethod.Get))
-        {
-            <div class="filter-row">
-                <div class="form-group">
-                    <label>Tìm kiếm</label>
-                    <input type="text" class="form-control" name="search"
-                           placeholder="Mã đơn, tên KH..." />
-                </div>
-
-                <div class="form-group">
-                    <label>Trạng thái</label>
-                    <select name="status" class="form-control">
-                        <option value="">Tất cả</option>
-                        @foreach (var s in ViewBag.OrderStatuses)
-                        {
-                            <option value="@s.StatusName">@s.StatusName</option>
-                        }
-                    </select>
-                </div>
-
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-search"></i> Lọc
-                </button>
-            </div>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        /* Copy toàn bộ CSS từ Products.cshtml */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f5f6fa;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            padding: 20px 0;
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+            .sidebar-header .logo {
+                font-size: 22px;
+                font-weight: bold;
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+                align-items: center;
+            }
+
+        .menu-item {
+            padding: 12px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            text-decoration: none;
+            font-size: 15px;
+            border-left: 3px solid transparent;
+        }
+
+            .menu-item:hover, .menu-item.active {
+                background: rgba(255,255,255,0.12);
+                border-left-color: #fff;
+            }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+            background: #f5f6fa;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: #fff;
+            padding: 20px 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .filter-section {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 20px;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .form-control {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            font-size: 14px;
+        }
+
+            .form-control:focus {
+                border-color: #667eea;
+                outline: none;
+            }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+        }
+
+        .btn-warning {
+            background: #ffca28;
+            color: #000;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .table-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead tr {
+            background: #f0f2f5;
+        }
+
+        th, td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .badge-primary {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-laptop"></i>
+                <span>TechShop</span>
+            </div>
+        </div>
+
+        <div class="sidebar-menu">
+            <a href="@Url.Action("Index", "Admin")" class="menu-item active">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="@Url.Action("Products", "Admin")" class="menu-item">
+                <i class="fas fa-box"></i>
+                <span>Quản lý sản phẩm</span>
+            </a>
+            <a href="@Url.Action("Orders", "Admin")" class="menu-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Quản lý đơn hàng</span>
+            </a>
+            <a href="@Url.Action("Users", "Admin")" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span>Quản lý người dùng</span>
+            </a>
+            <a href="@Url.Action("Categories", "Admin")" class="menu-item">
+                <i class="fas fa-tags"></i>
+                <span>Danh mục</span>
+            </a>
+            <a href="@Url.Action("Brands", "Admin")" class="menu-item">
+                <i class="fas fa-copyright"></i>
+                <span>Thương hiệu</span>
+            </a>
+            <a href="@Url.Action("Statistics", "Admin")" class="menu-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Thống kê</span>
+            </a>
+            <a href="@Url.Action("Settings", "Admin")" class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span>Cấu hình</span>
+            </a>
+            <a href="@Url.Action("Index", "Home")" class="menu-item">
+                <i class="fas fa-home"></i>
+                <span>Về trang chủ</span>
+            </a>
+            <a href="@Url.Action("Logout", "Account")" class="menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Đăng xuất</span>
+            </a>
+        </div>
     </div>
 
-    <div class="table-card">
-        <table>
-            <thead>
-                <tr>
-                    <th>Mã đơn</th>
-                    <th>Khách hàng</th>
-                    <th>Ngày đặt</th>
-                    <th>Trạng thái</th>
-                    <th>Tổng tiền</th>
-                    <th>Thao tác</th>
-                </tr>
-            </thead>
 
-            <tbody>
-                @foreach (var order in Model)
-                {
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="topbar">
+            <h2 class="page-title"><i class="fas fa-shopping-cart"></i> Quản lý đơn hàng</h2>
+        </div>
+
+        <div class="filter-section">
+            @using (Html.BeginForm("Orders", "Admin", FormMethod.Get))
+            {
+                <div class="filter-row">
+                    <div class="form-group">
+                        <label>Tìm kiếm</label>
+                        <input type="text" class="form-control" name="search"
+                               placeholder="Mã đơn, tên KH..." value="@Request["search"]" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Trạng thái</label>
+                        <select name="status" class="form-control">
+                            <option value="">Tất cả</option>
+                            @foreach (var s in ViewBag.OrderStatuses)
+                            {
+                                <option value="@s.StatusName" @(Request["status"] == s.StatusName ? "selected" : "")>
+                                    @s.StatusName
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Lọc
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="table-card">
+            <table>
+                <thead>
                     <tr>
-                        <td><strong>@order.OrderCode</strong></td>
-                        <td>@order.CustomerName<br />@order.CustomerPhone</td>
-                        <td>@order.OrderDate.ToString("dd/MM/yyyy")</td>
-                        <td>
-                            <span class="badge">
-                                @order.Status.StatusName
-                            </span>
-                        </td>
-                        <td>@order.FinalAmount.ToString("N0") đ</td>
-                        <td>
-                            <a href="@Url.Action("OrderDetail", "Admin", new { id = order.OrderID })"
-                               class="btn-warning btn-sm">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                        </td>
+                        <th>Mã đơn</th>
+                        <th>Khách hàng</th>
+                        <th>Ngày đặt</th>
+                        <th>Trạng thái</th>
+                        <th>Tổng tiền</th>
+                        <th>Thao tác</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var order in Model)
+                        {
+                            <tr>
+                                <td><strong>@order.OrderCode</strong></td>
+                                <td>@order.CustomerName<br />@order.CustomerPhone</td>
+                                <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    @{
+                                        string badgeClass = "badge-warning";
+                                        switch (order.Status.StatusName)
+                                        {
+                                            case "Đã xác nhận": badgeClass = "badge-info"; break;
+                                            case "Đang chuẩn bị":
+                                            case "Đang giao": badgeClass = "badge-primary"; break;
+                                            case "Đã giao": badgeClass = "badge-success"; break;
+                                            case "Đã hủy": badgeClass = "badge-danger"; break;
+                                        }
+                                    }
+                                    <span class="badge @badgeClass">@order.Status.StatusName</span>
+                                </td>
+                                <td class="text-danger"><strong>@order.FinalAmount.ToString("N0") đ</strong></td>
+                                <td>
+                                    <a href="@Url.Action("OrderDetail", "Admin", new { id = order.OrderID })"
+                                       class="btn btn-warning btn-sm">
+                                        <i class="fas fa-eye"></i> Chi tiết
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" style="text-align:center; padding:20px; color:#aaa">
+                                Không có đơn hàng nào
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
+
+</body>
+</html>

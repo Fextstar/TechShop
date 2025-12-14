@@ -344,14 +344,14 @@ namespace TechShop.Controllers
             }
         }
 
-        // GET: Account/Orders - Danh sách đơn hàng của user
+        // GET: Account/MyOrders - Danh sách đơn hàng của user
         [HttpGet]
-        public ActionResult Orders()
+        public ActionResult MyOrders()
         {
             if (Session["UserID"] == null)
             {
                 TempData["Warning"] = "Vui lòng đăng nhập để xem đơn hàng.";
-                return RedirectToAction("Login", new { returnUrl = Url.Action("Orders") });
+                return RedirectToAction("Login", new { returnUrl = Url.Action("MyOrders") });
             }
 
             int userId = (int)Session["UserID"];
@@ -363,7 +363,7 @@ namespace TechShop.Controllers
                 .OrderByDescending(o => o.OrderDate)
                 .ToList();
 
-            return View("MyOrders", orders); //
+            return View(orders);
         }
 
 

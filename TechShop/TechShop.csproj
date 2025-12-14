@@ -230,7 +230,7 @@
     <Content Include="Views\Home\ProductDetail.cshtml" />
     <Content Include="Views\Cart\Index.cshtml" />
     <Content Include="Views\Order\Checkout.cshtml" />
-    <Content Include="Views\Order\MyOrders.cshtml" />
+    <Content Include="Views\Account\MyOrders.cshtml" />
     <Content Include="Views\Order\OrderDetail.cshtml" />
     <Content Include="Views\Order\OrderSuccess.cshtml" />
     <Content Include="Views\Account\Login.cshtml" />
@@ -245,6 +245,11 @@
     <Content Include="Views\Admin\Orders.cshtml" />
     <Content Include="Views\Admin\Users.cshtml" />
     <Content Include="Views\Account\Profile.cshtml" />
+    <Content Include="Views\Order\MyOrders.cshtml" />
+    <Content Include="Views\Admin\OrderDetail.cshtml" />
+    <Content Include="Views\Admin\Categories.cshtml" />
+    <Content Include="Views\Admin\CreateCategory.cshtml" />
+    <Content Include="Views\Admin\EditCategory.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

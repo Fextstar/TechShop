@@ -1,0 +1,116 @@
+﻿@model IEnumerable<TechShop.Models.Order>
+@{
+    ViewBag.Title = "Đơn hàng của tôi";
+}
+
+<h2 class="mb-4"><i class="fas fa-box"></i> Đơn hàng của tôi</h2>
+
+@if (Model != null && Model.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="thead-light">
+                <tr>
+                    <th>Mã đơn hàng</th>
+                    <th>Ngày đặt</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Thanh toán</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model)
+                {
+                    <tr>
+                        <td>
+                            <a href="@Url.Action("OrderDetail", "Order", new { id = order.OrderID })" class="font-weight-bold">
+                                @order.OrderCode
+                            </a>
+                        </td>
+                        <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td class="text-danger font-weight-bold">@order.FinalAmount.ToString("N0") đ</td>
+                        <td>
+                            @switch (order.Status.StatusName)
+                            {
+                                case "Chờ xác nhận":
+                                    <span class="badge badge-warning">@order.Status.StatusName</span>
+                                    break;
+                                case "Đã xác nhận":
+                                    <span class="badge badge-info">@order.Status.StatusName</span>
+                                    break;
+                                case "Đang chuẩn bị":
+                                    <span class="badge badge-primary">@order.Status.StatusName</span>
+                                    break;
+                                case "Đang giao":
+                                    <span class="badge badge-primary">@order.Status.StatusName</span>
+                                    break;
+                                case "Đã giao":
+                                    <span class="badge badge-success">@order.Status.StatusName</span>
+                                    break;
+                                case "Đã hủy":
+                                    <span class="badge badge-danger">@order.Status.StatusName</span>
+                                    break;
+                                default:
+                                    <span class="badge badge-secondary">@order.Status.StatusName</span>
+                                    break;
+                            }
+                        </td>
+                        <td>
+                            @if (order.PaymentStatus == "Đã thanh toán")
+                            {
+                                <span class="badge badge-success">Đã thanh toán</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-secondary">Chưa thanh toán</span>
+                            }
+                        </td>
+                        <td>
+                            <a href="@Url.Action("OrderDetail", "Order", new { id = order.OrderID })" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye"></i> Chi tiết
+                            </a>
+                            @if (order.Status.StatusName == "Chờ xác nhận" || order.Status.StatusName == "Đã xác nhận")
+                            {
+                                <button class="btn btn-sm btn-danger" onclick="cancelOrder(@order.OrderID)">
+                                    <i class="fas fa-times"></i> Hủy
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle fa-3x mb-3"></i>
+        <h5>Bạn chưa có đơn hàng nào</h5>
+        <a href="@Url.Action("Products", "Home")" class="btn btn-primary mt-2">
+            <i class="fas fa-shopping-bag"></i> Mua sắm ngay
+        </a>
+    </div>
+}
+
+@section scripts {
+    <script>
+        function cancelOrder(orderId) {
+            var reason = prompt("Lý do hủy đơn hàng:");
+            if (reason) {
+                $.post('@Url.Action("CancelOrder", "Order")',
+                    { id: orderId, reason: reason },
+                    function(data) {
+                        if (data.success) {
+                            alert(data.message);
+                            location.reload();
+                        } else {
+                            alert(data.message);
+                        }
+                    }
+                );
+            }
+        }
+    </script>
+}

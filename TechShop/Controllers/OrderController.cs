@@ -99,20 +99,32 @@ namespace TechShop.Controllers
                 return RedirectToAction("Index", "Cart");
             }
 
-            // Validate thông tin đơn hàng
-            if (string.IsNullOrEmpty(order.CustomerName))
+            // QUAN TRỌNG: Xóa lỗi validation cho các field do hệ thống tạo
+            ModelState.Remove("OrderCode");
+            ModelState.Remove("OrderID");
+            ModelState.Remove("UserID");
+            ModelState.Remove("OrderDate");
+            ModelState.Remove("StatusID");
+            ModelState.Remove("TotalAmount");
+            ModelState.Remove("ShippingFee");
+            ModelState.Remove("DiscountAmount");
+            ModelState.Remove("FinalAmount");
+            ModelState.Remove("PaymentStatus");
+
+            // Validate thông tin bắt buộc
+            if (string.IsNullOrWhiteSpace(order.CustomerName))
             {
                 ModelState.AddModelError("CustomerName", "Vui lòng nhập họ tên");
             }
-            if (string.IsNullOrEmpty(order.CustomerPhone))
+            if (string.IsNullOrWhiteSpace(order.CustomerPhone))
             {
                 ModelState.AddModelError("CustomerPhone", "Vui lòng nhập số điện thoại");
             }
-            if (string.IsNullOrEmpty(order.ShippingAddress))
+            if (string.IsNullOrWhiteSpace(order.ShippingAddress))
             {
                 ModelState.AddModelError("ShippingAddress", "Vui lòng nhập địa chỉ giao hàng");
             }
-            if (string.IsNullOrEmpty(order.PaymentMethod))
+            if (string.IsNullOrWhiteSpace(order.PaymentMethod))
             {
                 ModelState.AddModelError("PaymentMethod", "Vui lòng chọn phương thức thanh toán");
             }
@@ -140,7 +152,7 @@ namespace TechShop.Controllers
                     ? (decimal)Session["DiscountAmount"]
                     : 0;
 
-                // Tạo đơn hàng
+                // TẠO DỮ LIỆU CHO CÁC FIELD BẮT BUỘC
                 order.OrderCode = "DH" + DateTime.Now.ToString("yyMMddHHmmss");
                 order.UserID = userId;
                 order.StatusID = 1; // Chờ xác nhận
