@@ -11,11 +11,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title</title>
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+
     <style>
         /* ================================
-   SIDEBAR
-================================ */
+           SIDEBAR
+        ================================ */
         .sidebar {
             position: fixed;
             top: 0;
@@ -62,10 +64,9 @@
                 border-left-color: #fff;
             }
 
-
         /* ================================
-   MAIN CONTENT / TOPBAR
-================================ */
+           MAIN CONTENT
+        ================================ */
         .main-content {
             margin-left: 260px;
             padding: 30px;
@@ -90,17 +91,16 @@
             font-weight: 700;
         }
 
-
         /* ================================
-   BUTTONS
-================================ */
+           BUTTONS
+        ================================ */
         .btn {
             padding: 10px 16px;
             border-radius: 8px;
-            text-decoration: none;
             font-weight: 600;
             border: none;
             cursor: pointer;
+            text-decoration: none;
         }
 
         .btn-success {
@@ -123,10 +123,9 @@
             font-size: 13px;
         }
 
-
         /* ================================
-   FILTER AREA
-================================ */
+           FILTER
+        ================================ */
         .filter-section {
             background: #fff;
             padding: 20px;
@@ -153,15 +152,9 @@
             font-size: 14px;
         }
 
-            .form-control:focus {
-                border-color: #667eea;
-                outline: none;
-            }
-
-
         /* ================================
-   TABLE
-================================ */
+           TABLE
+        ================================ */
         .table-card {
             background: #fff;
             padding: 20px;
@@ -174,24 +167,23 @@
             border-collapse: collapse;
         }
 
-        thead tr {
-            background: #f0f2f5;
-        }
-
         th, td {
             padding: 12px 10px;
             border-bottom: 1px solid #eee;
             font-size: 14px;
         }
 
+        thead tr {
+            background: #f0f2f5;
+        }
+
         tr:hover {
             background: #f8f9fa;
         }
 
-
         /* ================================
-   BADGES
-================================ */
+           BADGE
+        ================================ */
         .badge {
             padding: 5px 10px;
             border-radius: 8px;
@@ -209,10 +201,9 @@
             color: white;
         }
 
-
         /* ================================
-   STOCK STATUS
-================================ */
+           STOCK STATUS
+        ================================ */
         .stock-low {
             background: #ffebee;
             color: #d32f2f;
@@ -228,7 +219,6 @@
             padding: 5px 10px;
             border-radius: 6px;
         }
-
     </style>
 </head>
 <body>
@@ -286,55 +276,19 @@
         </div>
     </div>
 
-    <!-- Main Content -->
+    <!-- MAIN -->
     <div class="main-content">
 
-        <!-- Top Bar -->
         <div class="topbar">
-            <h1 class="page-title"><i class="fas fa-box"></i> Quản lý sản phẩm</h1>
-            <a href="@Url.Action("CreateProduct", "Admin")" class="btn btn-success">
+            <h1 class="page-title">
+                <i class="fas fa-box"></i> Quản lý sản phẩm
+            </h1>
+            <a href="@Url.Action("CreateProduct","Admin")" class="btn btn-success">
                 <i class="fas fa-plus"></i> Thêm sản phẩm
             </a>
         </div>
 
-        <!-- Filter -->
-        <div class="filter-section">
-            @using (Html.BeginForm("Products", "Admin", FormMethod.Get))
-            {
-                <div class="filter-row">
-
-                    <div class="form-group">
-                        <label>Tìm kiếm</label>
-                        <input type="text" name="search" class="form-control"
-                               placeholder="Tên sản phẩm, SKU..."
-                               value="@Request["search"]" />
-                    </div>
-
-                    <div class="form-group">
-                        <label>Danh mục</label>
-                        <select name="categoryId" class="form-control">
-                            <option value="">Tất cả danh mục</option>
-                            @foreach (var c in ViewBag.Categories)
-                            {
-                                <option value="@c.CategoryID"
-                                        @(Request["categoryId"] == c.CategoryID.ToString() ? "selected" : "")>
-                                    @c.CategoryName
-                                </option>
-                            }
-                        </select>
-                    </div>
-
-                    <div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-search"></i> Lọc
-                        </button>
-                    </div>
-
-                </div>
-            }
-        </div>
-
-        <!-- Table -->
+        <!-- TABLE -->
         <div class="table-card">
             <table>
                 <thead>
@@ -361,15 +315,13 @@
 
                                 <td>
                                     <strong>@p.ProductName</strong><br />
-
-                                    @* ẢNH CHÍNH *@
                                     <img src="@p.PrimaryImageURL"
-                                         style="width:50px;height:50px;border-radius:5px;object-fit:cover;margin-top:5px;" />
+                                         style="width:50px;height:50px;border-radius:6px;object-fit:cover;margin-top:5px;" />
                                 </td>
 
                                 <td>@p.SKU</td>
-                                <td>@p.Category?.CategoryName</td>
-                                <td>@p.Brand?.BrandName</td>
+                                <td>@p.Category</td>
+                                <td>@p.Brand</td>
 
                                 <td>
                                     @if (p.HasDiscount)
@@ -387,10 +339,28 @@
                                     }
                                 </td>
 
+                                <!-- ===== TỒN KHO ĐÃ CẬP NHẬT ===== -->
                                 <td>
-                                    <span class="@(p.StockQuantity <= p.MinStockLevel ? "stock-low" : "stock-ok")">
-                                        @p.StockQuantity
-                                    </span>
+                                    @if (p.StockQuantity <= 0)
+                                    {
+                                        <span class="stock-low">
+                                            <i class="fas fa-exclamation-triangle"></i> Hết hàng
+                                        </span>
+                                    }
+                                    else if (p.StockQuantity <= p.MinStockLevel)
+                                    {
+                                        <span class="stock-low">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            @p.StockQuantity (Sắp hết)
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="stock-ok">
+                                            <i class="fas fa-check-circle"></i>
+                                            @p.StockQuantity
+                                        </span>
+                                    }
                                 </td>
 
                                 <td>
@@ -405,12 +375,13 @@
                                 </td>
 
                                 <td>
-                                    <a href="@Url.Action("EditProduct", "Admin", new { id = p.ProductID })"
+                                    <a href="@Url.Action("EditProduct","Admin",new { id = p.ProductID })"
                                        class="btn btn-warning btn-sm">
                                         <i class="fas fa-edit"></i>
                                     </a>
 
-                                    <button class="btn btn-danger btn-sm" onclick="deleteProduct(@p.ProductID)">
+                                    <button class="btn btn-danger btn-sm"
+                                            onclick="deleteProduct(@p.ProductID)">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
@@ -420,15 +391,14 @@
                     else
                     {
                         <tr>
-                            <td colspan="9" style="text-align:center;padding:20px;color:#aaa">
-                                Không có sản phẩm nào
+                            <td colspan="9" style="text-align:center;color:#aaa;padding:20px">
+                                Không có sản phẩm
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
-
     </div>
 
     <script>

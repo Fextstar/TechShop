@@ -3,58 +3,39 @@
     ViewBag.Title = "Trang chủ";
 }
 
-<!-- Banner Slider -->
-<div id="carouselBanner" class="carousel slide mb-4" data-ride="carousel">
-    <ol class="carousel-indicators">
-        <li data-target="#carouselBanner" data-slide-to="0" class="active"></li>
-        <li data-target="#carouselBanner" data-slide-to="1"></li>
-        <li data-target="#carouselBanner" data-slide-to="2"></li>
-    </ol>
+<!-- ================= BANNER ================= -->
+<div id="carouselBanner" class="carousel slide mb-5" data-ride="carousel">
     <div class="carousel-inner">
         <div class="carousel-item active">
-            <img src="~/Content/Images/banner1.png" class="d-block w-100" alt="Banner 1" style="height: 400px; object-fit: cover;">
-            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 p-3">
-                <h3>Thiết bị máy tính chính hãng</h3>
-                <p>Giá tốt nhất thị trường</p>
-            </div>
+            <img src="~/Content/Images/banner1.png" class="d-block w-100" style="height:400px;object-fit:cover">
         </div>
         <div class="carousel-item">
-            <img src="~/Content/Images/banner2.jpg" class="d-block w-100" alt="Banner 2" style="height: 400px; object-fit: cover;">
-            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 p-3">
-                <h3>Laptop Gaming cao cấp</h3>
-                <p>Cấu hình mạnh mẽ, trải nghiệm tuyệt vời</p>
-            </div>
+            <img src="~/Content/Images/banner2.jpg" class="d-block w-100" style="height:400px;object-fit:cover">
         </div>
         <div class="carousel-item">
-            <img src="~/Content/Images/banner3.jpg" class="d-block w-100" alt="Banner 3" style="height: 400px; object-fit: cover;">
-            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 p-3">
-                <h3>Phụ kiện đa dạng</h3>
-                <p>Đầy đủ linh kiện và phụ kiện</p>
-            </div>
+            <img src="~/Content/Images/banner3.jpg" class="d-block w-100" style="height:400px;object-fit:cover">
         </div>
     </div>
-    <a class="carousel-control-prev" href="#carouselBanner" role="button" data-slide="prev">
-        <span class="carousel-control-prev-icon"></span>
-    </a>
-    <a class="carousel-control-next" href="#carouselBanner" role="button" data-slide="next">
-        <span class="carousel-control-next-icon"></span>
-    </a>
 </div>
 
-<!-- Categories -->
-<div class="row mb-4">
-    <div class="col-12">
-        <h3 class="mb-3">Danh mục sản phẩm</h3>
+<!-- ================= CATEGORIES ================= -->
+<div class="row mb-5">
+    <div class="col-12 mb-3">
+        <h3 class="section-title">
+            <i class="fas fa-list"></i> Danh mục sản phẩm
+        </h3>
     </div>
-    @foreach (var category in ViewBag.Categories)
+
+    @foreach (var c in ViewBag.Categories)
     {
-        <div class="col-md-3 col-sm-6 mb-3">
-            <a href="@Url.Action("Products", "Home", new { categoryId = category.CategoryID })" class="text-decoration-none">
-                <div class="card text-center h-100 category-card">
+        <div class="col-md-3 col-sm-6 mb-4">
+            <a href="@Url.Action("Products","Home",new { categoryId = c.CategoryID })"
+               class="text-decoration-none">
+                <div class="card category-card text-center h-100">
                     <div class="card-body">
-                        <i class="fas fa-laptop fa-3x text-primary mb-3"></i>
-                        <h5 class="card-title">@category.CategoryName</h5>
-                        <p class="card-text text-muted">@category.Description</p>
+                        <i class="fas fa-laptop fa-3x mb-3"></i>
+                        <h5 class="card-title">@c.CategoryName</h5>
+                        <p class="card-text">@c.Description</p>
                     </div>
                 </div>
             </a>
@@ -62,133 +43,79 @@
     }
 </div>
 
-<!-- Featured Products -->
-<div class="row mb-4">
+<!-- ================= FEATURED PRODUCTS ================= -->
+<div class="row mb-3">
     <div class="col-12">
-        <h3 class="mb-3">Sản phẩm nổi bật</h3>
+        <h3 class="section-title">
+            <i class="fas fa-fire"></i> Sản phẩm nổi bật
+        </h3>
     </div>
 </div>
 
 <div class="row">
-    @if (Model != null && Model.Any())
+    @foreach (var p in Model)
     {
-        foreach (var product in Model)
-        {
-            <div class="col-md-3 col-sm-6 mb-4">
-                <div class="card h-100 product-card">
-                    <a href="@Url.Action("ProductDetail", "Home", new { id = product.ProductID })">
-                        <img src="@product.PrimaryImageURL"
-                             class="card-img-top"
-                             alt="@product.ProductName"
-                             style="height: 200px; object-fit: cover;">
-                    </a>
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <a href="@Url.Action("ProductDetail", "Home", new { id = product.ProductID })" class="text-dark text-decoration-none">
-                                @product.ProductName
-                            </a>
-                        </h5>
-                        <p class="card-text text-muted small" style="height: 60px; overflow: hidden;">
-                            @(product.Description?.Length > 80 ? product.Description.Substring(0, 80) + "..." : product.Description)
-                        </p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            @if (product.HasDiscount)
-                            {
-                                <div>
-                                    <h5 class="text-danger mb-0">@product.DisplayPrice.ToString("N0") đ</h5>
-                                    <small class="text-muted"><del>@product.Price.ToString("N0") đ</del></small>
-                                </div>
-                                <span class="badge badge-danger">-@product.DiscountPercentage%</span>
-                            }
-                            else
-                            {
-                                <h5 class="text-danger mb-0">@product.Price.ToString("N0") đ</h5>
-                                if (product.StockQuantity > 0)
-                                {
-                                    <span class="badge badge-success">Còn hàng</span>
-                                }
-                                else
-                                {
-                                    <span class="badge badge-secondary">Hết hàng</span>
-                                }
-                            }
-                        </div>
-                    </div>
-                    <div class="card-footer bg-white border-0">
-                        @if (product.StockQuantity > 0)
-                        {
-                            <button class="btn btn-primary btn-block" onclick="addToCart(@product.ProductID)">
-                                <i class="fas fa-cart-plus"></i> Thêm vào giỏ
-                            </button>
-                        }
-                        else
-                        {
-                            <button class="btn btn-secondary btn-block" disabled>
-                                Hết hàng
-                            </button>
-                        }
-                    </div>
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card product-card h-100">
+
+                <a href="@Url.Action("ProductDetail","Home",new { id = p.ProductID })">
+                    <img src="@p.PrimaryImageURL" class="card-img-top" style="height:200px;object-fit:cover">
+                </a>
+
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="@Url.Action("ProductDetail","Home",new { id = p.ProductID })">
+                            @p.ProductName
+                        </a>
+                    </h5>
+
+                    <p class="card-text">
+                        @(p.Description?.Length > 80 ? p.Description.Substring(0,80)+"..." : p.Description)
+                    </p>
+
+                    @if (p.HasDiscount)
+                    {
+                        <h5 class="text-danger">@p.DisplayPrice.ToString("N0") đ</h5>
+                        <del>@p.Price.ToString("N0") đ</del>
+                        <span class="badge badge-danger">-@p.DiscountPercentage%</span>
+                    }
+                    else
+                    {
+                        <h5 class="text-danger">@p.Price.ToString("N0") đ</h5>
+                    }
+
+                    @if (p.StockQuantity > 0)
+                    {
+                        <span class="badge badge-success">Còn hàng</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-secondary out-of-stock">Hết hàng</span>
+                    }
+                </div>
+
+                <div class="card-footer">
+                    @if (p.StockQuantity > 0)
+                    {
+                        <button class="btn btn-primary btn-block"
+                                onclick="addToCart(@p.ProductID)">
+                            <i class="fas fa-cart-plus"></i> Thêm vào giỏ
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-secondary btn-block" disabled>
+                            Hết hàng
+                        </button>
+                    }
                 </div>
             </div>
-        }
-    }
-    else
-    {
-        <div class="col-12">
-            <div class="alert alert-info">Chưa có sản phẩm nào.</div>
         </div>
     }
 </div>
 
 <div class="text-center mt-4">
-    <a href="@Url.Action("Products", "Home")" class="btn btn-primary btn-lg">
+    <a href="@Url.Action("Products","Home")" class="btn btn-primary btn-lg">
         Xem tất cả sản phẩm <i class="fas fa-arrow-right"></i>
     </a>
 </div>
-
-<!-- Features Section -->
-<div class="row mt-5 mb-4">
-    <div class="col-md-3 text-center">
-        <i class="fas fa-shipping-fast fa-3x text-primary mb-3"></i>
-        <h5>Giao hàng nhanh</h5>
-        <p class="text-muted">Giao hàng toàn quốc</p>
-    </div>
-    <div class="col-md-3 text-center">
-        <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
-        <h5>Bảo hành chính hãng</h5>
-        <p class="text-muted">Cam kết chất lượng</p>
-    </div>
-    <div class="col-md-3 text-center">
-        <i class="fas fa-money-bill-wave fa-3x text-primary mb-3"></i>
-        <h5>Giá cả cạnh tranh</h5>
-        <p class="text-muted">Giá tốt nhất thị trường</p>
-    </div>
-    <div class="col-md-3 text-center">
-        <i class="fas fa-headset fa-3x text-primary mb-3"></i>
-        <h5>Hỗ trợ 24/7</h5>
-        <p class="text-muted">Tư vấn nhiệt tình</p>
-    </div>
-</div>
-
-@section scripts {
-    <style>
-        .category-card {
-            transition: transform 0.3s, box-shadow 0.3s;
-            border: 1px solid #dee2e6;
-        }
-
-            .category-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            }
-
-        .product-card {
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-            .product-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            }
-    </style>
-}

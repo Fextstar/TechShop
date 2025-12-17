@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Globalization;
 using System.Linq;
 
 namespace TechShop.Models
@@ -40,16 +41,18 @@ namespace TechShop.Models
         [DataType(DataType.MultilineText)]
         public string Specifications { get; set; }
 
+        // ================== PRICE ==================
+
         [Required(ErrorMessage = "Giá không được để trống")]
         [Display(Name = "Giá gốc")]
         [Range(0, (double)decimal.MaxValue, ErrorMessage = "Giá phải lớn hơn hoặc bằng 0")]
-        [DisplayFormat(DataFormatString = "{0:N0} đ", ApplyFormatInEditMode = false)]
         public decimal Price { get; set; }
 
-
         [Display(Name = "Giá khuyến mãi")]
-        [Range(0, double.MaxValue, ErrorMessage = "Giá khuyến mãi phải lớn hơn 0")]
+        [Range(0, (double)decimal.MaxValue, ErrorMessage = "Giá khuyến mãi phải lớn hơn hoặc bằng 0")]
         public decimal? DiscountPrice { get; set; }
+
+        // ================== STOCK ==================
 
         [Display(Name = "Số lượng tồn kho")]
         [Range(0, int.MaxValue, ErrorMessage = "Số lượng không được âm")]
@@ -57,6 +60,8 @@ namespace TechShop.Models
 
         [Display(Name = "Mức tồn kho tối thiểu")]
         public int MinStockLevel { get; set; }
+
+        // ================== OTHER ==================
 
         [Display(Name = "Trọng lượng (kg)")]
         public decimal? Weight { get; set; }
@@ -92,24 +97,9 @@ namespace TechShop.Models
         [ForeignKey("SupplierID")]
         public virtual Supplier Supplier { get; set; }
 
-        /// <summary>
-        /// Danh sách hình ảnh của sản phẩm
-        /// </summary>
         public virtual ICollection<ProductImage> ProductImages { get; set; }
-
-        /// <summary>
-        /// Danh sách đánh giá sản phẩm
-        /// </summary>
         public virtual ICollection<ProductReview> ProductReviews { get; set; }
-
-        /// <summary>
-        /// Danh sách chi tiết đơn hàng
-        /// </summary>
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
-
-        /// <summary>
-        /// Danh sách trong giỏ hàng
-        /// </summary>
         public virtual ICollection<CartItem> CartItems { get; set; }
 
         // ==========================================
@@ -117,7 +107,7 @@ namespace TechShop.Models
         // ==========================================
 
         /// <summary>
-        /// Lấy URL ảnh chính của sản phẩm
+        /// Ảnh chính
         /// </summary>
         [NotMapped]
         public string PrimaryImageURL
@@ -126,35 +116,32 @@ namespace TechShop.Models
             {
                 if (ProductImages != null && ProductImages.Any())
                 {
-                    var primaryImage = ProductImages.FirstOrDefault(img => img.IsPrimary);
-                    if (primaryImage != null)
-                        return primaryImage.ImageURL;
+                    var primary = ProductImages.FirstOrDefault(i => i.IsPrimary);
+                    if (primary != null)
+                        return primary.ImageURL;
 
-                    // Nếu không có ảnh primary, lấy ảnh đầu tiên
-                    var firstImage = ProductImages.OrderBy(img => img.DisplayOrder).FirstOrDefault();
-                    if (firstImage != null)
-                        return firstImage.ImageURL;
+                    return ProductImages.OrderBy(i => i.DisplayOrder).First().ImageURL;
                 }
-
-                // Trả về ảnh mặc định nếu không có ảnh nào
                 return "/Content/images/no-image.png";
             }
         }
 
         /// <summary>
-        /// Kiểm tra có giảm giá không
+        /// Có giảm giá không
         /// </summary>
         [NotMapped]
         public bool HasDiscount
         {
             get
             {
-                return DiscountPrice.HasValue && DiscountPrice.Value > 0 && DiscountPrice.Value < Price;
+                return DiscountPrice.HasValue
+                       && DiscountPrice.Value > 0
+                       && DiscountPrice.Value < Price;
             }
         }
 
         /// <summary>
-        /// Giá hiển thị (ưu tiên giá khuyến mãi nếu có)
+        /// Giá dùng cho xử lý logic
         /// </summary>
         [NotMapped]
         public decimal DisplayPrice
@@ -166,7 +153,48 @@ namespace TechShop.Models
         }
 
         /// <summary>
-        /// Phần trăm giảm giá
+        /// Giá gốc hiển thị VNĐ (18.000.000 Đồng)
+        /// </summary>
+        [NotMapped]
+        public string PriceVND
+        {
+            get
+            {
+                return string.Format(new CultureInfo("vi-VN"), "{0:N0} Đồng", Price);
+            }
+        }
+
+        /// <summary>
+        /// Giá khuyến mãi hiển thị VNĐ
+        /// </summary>
+        [NotMapped]
+        public string DiscountPriceVND
+        {
+            get
+            {
+                if (DiscountPrice.HasValue)
+                {
+                    return string.Format(new CultureInfo("vi-VN"), "{0:N0} Đồng", DiscountPrice.Value);
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Giá hiển thị ưu tiên khuyến mãi (VNĐ)
+        /// </summary>
+        [NotMapped]
+        public string DisplayPriceVND
+        {
+            get
+            {
+                var price = HasDiscount ? DiscountPrice.Value : Price;
+                return string.Format(new CultureInfo("vi-VN"), "{0:N0} Đồng", price);
+            }
+        }
+
+        /// <summary>
+        /// % giảm giá
         /// </summary>
         [NotMapped]
         public int DiscountPercentage
@@ -189,12 +217,9 @@ namespace TechShop.Models
         {
             get
             {
-                if (StockQuantity <= 0)
-                    return "Hết hàng";
-                else if (StockQuantity <= MinStockLevel)
-                    return "Sắp hết";
-                else
-                    return "Còn hàng";
+                if (StockQuantity <= 0) return "Hết hàng";
+                if (StockQuantity <= MinStockLevel) return "Sắp hết";
+                return "Còn hàng";
             }
         }
 
@@ -207,9 +232,7 @@ namespace TechShop.Models
             get
             {
                 if (ProductReviews != null && ProductReviews.Any(r => r.IsApproved))
-                {
                     return ProductReviews.Where(r => r.IsApproved).Average(r => r.Rating);
-                }
                 return 0;
             }
         }
@@ -222,11 +245,7 @@ namespace TechShop.Models
         {
             get
             {
-                if (ProductReviews != null)
-                {
-                    return ProductReviews.Count(r => r.IsApproved);
-                }
-                return 0;
+                return ProductReviews?.Count(r => r.IsApproved) ?? 0;
             }
         }
 

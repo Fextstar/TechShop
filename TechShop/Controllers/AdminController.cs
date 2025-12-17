@@ -482,14 +482,12 @@ namespace TechShop.Controllers
         // GET: Admin/Statistics
         public ActionResult Statistics(string period = "month")
         {
+            ViewBag.Period = period; // ⭐ BẮT BUỘC
+
             var model = new
             {
-                Period = period,
-
-                // Doanh thu theo thời gian
                 RevenueData = GetRevenueByPeriod(period),
 
-                // Top sản phẩm bán chạy
                 TopProducts = db.OrderDetails
                     .GroupBy(od => new { od.ProductID, od.ProductName })
                     .Select(g => new {
@@ -501,7 +499,6 @@ namespace TechShop.Controllers
                     .Take(10)
                     .ToList(),
 
-                // Thống kê theo danh mục
                 CategoryStats = db.OrderDetails
                     .Include(od => od.Product.Category)
                     .GroupBy(od => od.Product.Category.CategoryName)
@@ -513,7 +510,6 @@ namespace TechShop.Controllers
                     .OrderByDescending(x => x.TotalRevenue)
                     .ToList(),
 
-                // Thống kê đơn hàng theo trạng thái
                 OrderStatusStats = db.Orders
                     .GroupBy(o => o.Status.StatusName)
                     .Select(g => new {
@@ -523,28 +519,22 @@ namespace TechShop.Controllers
                     })
                     .ToList(),
 
-                // Thống kê tổng quan
                 TotalRevenue = db.Orders
                     .Where(o => o.Status.StatusName == "Đã giao")
                     .Sum(o => (decimal?)o.FinalAmount) ?? 0,
 
                 TotalOrders = db.Orders.Count(),
-
                 CompletedOrders = db.Orders.Count(o => o.Status.StatusName == "Đã giao"),
-
                 PendingOrders = db.Orders.Count(o => o.Status.StatusName == "Chờ xác nhận"),
-
                 CancelledOrders = db.Orders.Count(o => o.Status.StatusName == "Đã hủy"),
-
-                TotalCustomers = db.Users.Count(u => u.RoleID == 4), // Customer role
-
+                TotalCustomers = db.Users.Count(u => u.RoleID == 4),
                 TotalProducts = db.Products.Count(p => p.IsActive),
-
                 LowStockProducts = db.Products.Count(p => p.StockQuantity <= p.MinStockLevel)
             };
 
             return View(model);
         }
+
 
         // Helper method - Lấy doanh thu theo khoảng thời gian
         private object GetRevenueByPeriod(string period)
@@ -600,6 +590,264 @@ namespace TechShop.Controllers
                                 .Count(o => DbFunctions.TruncateTime(o.OrderDate) == DbFunctions.TruncateTime(date))
                         })
                         .ToList();
+            }
+        }
+        // GET: Admin/Brands
+        public ActionResult Brands()
+        {
+            var brands = db.Brands
+                .OrderByDescending(b => b.CreatedDate)
+                .ToList();
+
+            return View(brands);
+        }
+
+        // POST: Admin/CreateBrand
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult CreateBrand(Brand brand)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Dữ liệu không hợp lệ";
+                return RedirectToAction("Brands");
+            }
+
+            brand.CreatedDate = DateTime.Now;
+            brand.IsActive = true;
+
+            db.Brands.Add(brand);
+            db.SaveChanges();
+
+            TempData["SuccessMessage"] = "Thêm thương hiệu thành công";
+            return RedirectToAction("Brands");
+        }
+
+        // GET: Admin/EditBrand/5
+        public ActionResult EditBrand(int id)
+        {
+            var brand = db.Brands.Find(id);
+            if (brand == null)
+            {
+                return HttpNotFound();
+            }
+
+            return View(brand);
+        }
+
+        // POST: Admin/EditBrand
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult EditBrand(Brand brand)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Dữ liệu không hợp lệ";
+                return View(brand);
+            }
+
+            var existingBrand = db.Brands.Find(brand.BrandID);
+            if (existingBrand == null)
+            {
+                return HttpNotFound();
+            }
+
+            existingBrand.BrandName = brand.BrandName;
+            existingBrand.Description = brand.Description;
+            existingBrand.LogoURL = brand.LogoURL;
+            existingBrand.Website = brand.Website;
+            existingBrand.IsActive = brand.IsActive;
+
+            db.SaveChanges();
+
+            TempData["SuccessMessage"] = "Cập nhật thương hiệu thành công";
+            return RedirectToAction("Brands");
+        }
+
+        // POST: Admin/DeleteBrand/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult DeleteBrand(int id)
+        {
+            var brand = db.Brands.Find(id);
+            if (brand == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy thương hiệu";
+                return RedirectToAction("Brands");
+            }
+
+            // ⚠️ Kiểm tra có sản phẩm hay không
+            bool hasProducts = db.Products.Any(p => p.BrandID == id);
+            if (hasProducts)
+            {
+                TempData["ErrorMessage"] = "Không thể xóa thương hiệu vì đang có sản phẩm sử dụng";
+                return RedirectToAction("Brands");
+            }
+
+            db.Brands.Remove(brand);
+            db.SaveChanges();
+
+            TempData["SuccessMessage"] = "Xóa thương hiệu thành công";
+            return RedirectToAction("Brands");
+        }
+
+
+        // POST: Admin/ToggleBrandStatus/5
+        [HttpPost]
+        public ActionResult ToggleBrandStatus(int id)
+        {
+            var brand = db.Brands.Find(id);
+            if (brand == null)
+                return HttpNotFound();
+
+            brand.IsActive = !brand.IsActive;
+            db.SaveChanges();
+
+            TempData["SuccessMessage"] = "Cập nhật trạng thái thương hiệu thành công";
+            return RedirectToAction("Brands");
+        }
+
+
+        // =======================
+        // READ – Danh sách danh mục
+        // =======================
+        public ActionResult Categories()
+        {
+            var categories = db.Categories
+                               .OrderByDescending(c => c.CreatedDate)
+                               .ToList();
+
+            return View(categories);
+        }
+
+        // =======================
+        // CREATE – GET
+        // =======================
+        public ActionResult CreateCategory()
+        {
+            ViewBag.ParentCategories = db.Categories
+                .Where(c => c.ParentCategoryID == null)
+                .ToList();
+
+            return View();
+        }
+
+        // =======================
+        // CREATE – POST
+        // =======================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult CreateCategory(Category category)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Dữ liệu không hợp lệ";
+                return RedirectToAction("CreateCategory");
+            }
+
+            category.CreatedDate = DateTime.Now;
+            category.IsActive = true;
+
+            db.Categories.Add(category);
+            db.SaveChanges();
+
+            TempData["SuccessMessage"] = "Thêm danh mục thành công";
+            return RedirectToAction("Categories");
+        }
+
+        // =======================
+        // UPDATE – GET
+        // =======================
+        public ActionResult EditCategory(int id)
+        {
+            var category = db.Categories.Find(id);
+            if (category == null)
+                return HttpNotFound();
+
+            ViewBag.ParentCategories = db.Categories
+                .Where(c => c.CategoryID != id)
+                .ToList();
+
+            return View(category);
+        }
+
+        // =======================
+        // UPDATE – POST
+        // =======================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult EditCategory(Category model)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Dữ liệu không hợp lệ";
+                return RedirectToAction("EditCategory", new { id = model.CategoryID });
+            }
+
+            var category = db.Categories.Find(model.CategoryID);
+            if (category == null)
+                return HttpNotFound();
+
+            category.CategoryName = model.CategoryName;
+            category.Description = model.Description;
+            category.ImageURL = model.ImageURL;
+            category.ParentCategoryID = model.ParentCategoryID;
+            category.IsActive = model.IsActive;
+
+            db.SaveChanges();
+
+            TempData["SuccessMessage"] = "Cập nhật danh mục thành công";
+            return RedirectToAction("Categories");
+        }
+
+        // =======================
+        // DELETE – AJAX
+        // =======================
+        [HttpPost]
+        public JsonResult DeleteCategory(int id)
+        {
+            try
+            {
+                var category = db.Categories.Find(id);
+                if (category == null)
+                {
+                    return Json(new { success = false, message = "Danh mục không tồn tại" });
+                }
+
+                // ❗ Nếu có danh mục con
+                bool hasChild = db.Categories.Any(c => c.ParentCategoryID == id);
+                if (hasChild)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = "Không thể xóa danh mục đang có danh mục con"
+                    });
+                }
+
+                // ❗ Nếu có sản phẩm
+                bool hasProduct = db.Products.Any(p => p.CategoryID == id);
+                if (hasProduct)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = "Không thể xóa danh mục đang chứa sản phẩm"
+                    });
+                }
+
+                db.Categories.Remove(category);
+                db.SaveChanges();
+
+                return Json(new { success = true, message = "Xóa danh mục thành công" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Lỗi: " + ex.Message
+                });
             }
         }
 

@@ -145,6 +145,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\Statistics\StatisticsViewModel.cs" />
     <Compile Include="Models\System\ActivityLog.cs" />
     <Compile Include="Models\ApplicationDbContext.cs" />
     <Compile Include="Models\Content\Banner.cs" />
@@ -194,6 +195,14 @@
     <Content Include="Content\Images\banner3.jpg" />
     <Content Include="Content\PagedList.css" />
     <Content Include="Content\Uploads\Posts\welcome.jpg" />
+    <Content Include="Content\Uploads\Products\CPU-INTEL-ULTRA-9-285K.png" />
+    <Content Include="Content\Uploads\Products\Laptop ASUS Zenbook 14 UX3405CA PZ204WS.png" />
+    <Content Include="Content\Uploads\Products\Laptop gaming MSI Crosshair 16 HX AI D2XWGKG 072VN.png" />
+    <Content Include="Content\Uploads\Products\MB-ASUS-ROG-Z790A-GWII-DDR5.jpg" />
+    <Content Include="Content\Uploads\Products\Nguồn máy tính MSI MAG A850GL PCIE5 WHITE - 80 Plus Gold - Full Modular %28850W%29.png" />
+    <Content Include="Content\Uploads\Products\Tản nhiệt Cooler Master Hyper 212 Spectrum V3 ARGB.png" />
+    <Content Include="Content\Uploads\Products\Vỏ máy tính ASUS ProArt PA602.jpg" />
+    <Content Include="Content\Uploads\Products\Vỏ máy tính Jonsbo D300 Black.jpg" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
@@ -255,13 +264,13 @@
     <Content Include="Views\Admin\EditCategory.cshtml" />
     <Content Include="Views\Shared\_AdminLayout.cshtml" />
     <Content Include="Views\Admin\Statistics.cshtml" />
+    <Content Include="Views\Admin\Brands.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Content\css\" />
     <Folder Include="Content\Uploads\Brands\" />
     <Folder Include="Content\Uploads\Categories\" />
-    <Folder Include="Content\Uploads\Products\" />
     <Folder Include="Content\Uploads\Users\" />
     <Folder Include="Views\Checkout\" />
   </ItemGroup>

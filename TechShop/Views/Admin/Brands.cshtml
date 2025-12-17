@@ -1,0 +1,312 @@
+﻿@model List<TechShop.Models.Brand>
+
+@{
+    ViewBag.Title = "Quản lý thương hiệu";
+    string fullName = Session["FullName"]?.ToString() ?? "Admin";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f5f6fa;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+        }
+
+        .sidebar-header {
+            padding: 25px;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            gap: 12px;
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+        }
+
+            .sidebar-menu a:hover, .sidebar-menu a.active {
+                background: rgba(255,255,255,0.12);
+                border-left-color: #fff;
+            }
+
+        /* ===== MAIN ===== */
+        .main-content {
+            margin-left: 260px;
+            padding: 25px;
+        }
+
+        .topbar {
+            background: #fff;
+            padding: 18px 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* ===== FORM ===== */
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        /* ===== TABLE ===== */
+        .table-card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f0f2f5;
+        }
+
+        /* ===== BUTTON ===== */
+        .btn {
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        .btn-sm {
+            padding: 6px 10px;
+            font-size: 13px;
+        }
+
+        /* ===== BADGE ===== */
+        .badge {
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* ===== ALERT ===== */
+        .alert {
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== SIDEBAR ===== -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-laptop"></i>
+                <span>TechShop</span>
+            </div>
+        </div>
+
+        <div class="sidebar-menu">
+            <a href="@Url.Action("Index", "Admin")" class="menu-item active">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="@Url.Action("Products", "Admin")" class="menu-item">
+                <i class="fas fa-box"></i>
+                <span>Quản lý sản phẩm</span>
+            </a>
+            <a href="@Url.Action("Orders", "Admin")" class="menu-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Quản lý đơn hàng</span>
+            </a>
+            <a href="@Url.Action("Users", "Admin")" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span>Quản lý người dùng</span>
+            </a>
+            <a href="@Url.Action("Categories", "Admin")" class="menu-item">
+                <i class="fas fa-tags"></i>
+                <span>Danh mục</span>
+            </a>
+            <a href="@Url.Action("Brands", "Admin")" class="menu-item">
+                <i class="fas fa-copyright"></i>
+                <span>Thương hiệu</span>
+            </a>
+            <a href="@Url.Action("Statistics", "Admin")" class="menu-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Thống kê</span>
+            </a>
+            <a href="@Url.Action("Settings", "Admin")" class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span>Cấu hình</span>
+            </a>
+            <a href="@Url.Action("Index", "Home")" class="menu-item">
+                <i class="fas fa-home"></i>
+                <span>Về trang chủ</span>
+            </a>
+            <a href="@Url.Action("Logout", "Account")" class="menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Đăng xuất</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ===== MAIN ===== -->
+    <div class="main-content">
+
+        <div class="topbar">
+            <h2><i class="fas fa-copyright"></i> Quản lý thương hiệu</h2>
+            <span>Xin chào <strong>@fullName</strong></span>
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+
+        <!-- ===== ADD BRAND ===== -->
+        <div class="table-card" style="margin-bottom:25px">
+            <h3 style="margin-bottom:15px"><i class="fas fa-plus"></i> Thêm thương hiệu</h3>
+
+            @using (Html.BeginForm("CreateBrand", "Admin", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px">
+                    <input name="BrandName" class="form-control" placeholder="Tên thương hiệu *" required />
+                    <input name="Website" class="form-control" placeholder="Website" />
+                    <input name="LogoURL" class="form-control" placeholder="Logo URL" />
+
+                    <select name="IsActive" class="form-control">
+                        <option value="true">Kích hoạt</option>
+                        <option value="false">Tạm ẩn</option>
+                    </select>
+
+                    <textarea name="Description" class="form-control"
+                              placeholder="Mô tả" style="grid-column:1/3"></textarea>
+
+                    <button class="btn btn-primary" style="grid-column:1/3">
+                        <i class="fas fa-save"></i> Lưu
+                    </button>
+                </div>
+            }
+        </div>
+
+        <!-- ===== TABLE ===== -->
+        <div class="table-card">
+            <h3 style="margin-bottom:15px"><i class="fas fa-list"></i> Danh sách thương hiệu</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Logo</th>
+                        <th>Tên</th>
+                        <th>Website</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày tạo</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var b in Model)
+                    {
+                        <tr>
+                            <td>@b.BrandID</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(b.LogoURL))
+                                {
+                                    <img src="@b.LogoURL" style="width:40px;height:40px;object-fit:contain" />
+                                }
+                            </td>
+                            <td>@b.BrandName</td>
+                            <td>@b.Website</td>
+                            <td>
+                                @if (b.IsActive)
+                                {<span class="badge badge-success">Hoạt động</span> }
+                                else
+                                { <span class="badge badge-danger">Ẩn</span>}
+                            </td>
+                            <td>@b.CreatedDate.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                @using (Html.BeginForm("DeleteBrand", "Admin", new { id = b.BrandID }, FormMethod.Post))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button class="btn btn-danger btn-sm"
+                                            onclick="return confirm('Xóa thương hiệu này?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</body>
+</html>

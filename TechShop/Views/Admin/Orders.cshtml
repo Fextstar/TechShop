@@ -318,18 +318,47 @@
                                 <td>@order.CustomerName<br />@order.CustomerPhone</td>
                                 <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
                                 <td>
+                                    <!-- Trong Orders.cshtml và OrderDetail.cshtml -->
                                     @{
-                                        string badgeClass = "badge-warning";
+                                        string badgeClass = "badge-warning"; // Default
+                                        string badgeIcon = "fa-clock";
+
                                         switch (order.Status.StatusName)
                                         {
-                                            case "Đã xác nhận": badgeClass = "badge-info"; break;
+                                            case "Chờ xác nhận":
+                                                badgeClass = "badge-warning";
+                                                badgeIcon = "fa-clock";
+                                                break;
+                                            case "Đã xác nhận":
+                                                badgeClass = "badge-info";
+                                                badgeIcon = "fa-check";
+                                                break;
                                             case "Đang chuẩn bị":
-                                            case "Đang giao": badgeClass = "badge-primary"; break;
-                                            case "Đã giao": badgeClass = "badge-success"; break;
-                                            case "Đã hủy": badgeClass = "badge-danger"; break;
+                                                badgeClass = "badge-primary";
+                                                badgeIcon = "fa-box";
+                                                break;
+                                            case "Đang giao":
+                                                badgeClass = "badge-primary";
+                                                badgeIcon = "fa-shipping-fast";
+                                                break;
+                                            case "Đã giao":
+                                                badgeClass = "badge-success";
+                                                badgeIcon = "fa-check-circle";
+                                                break;
+                                            case "Đã hủy":
+                                                badgeClass = "badge-danger";
+                                                badgeIcon = "fa-times-circle";
+                                                break;
+                                            case "Trả hàng":
+                                                badgeClass = "badge-secondary";
+                                                badgeIcon = "fa-undo";
+                                                break;
                                         }
                                     }
-                                    <span class="badge @badgeClass">@order.Status.StatusName</span>
+
+                                    <span class="badge @badgeClass">
+                                        <i class="fas @badgeIcon"></i> @order.Status.StatusName
+                                    </span>
                                 </td>
                                 <td class="text-danger"><strong>@order.FinalAmount.ToString("N0") đ</strong></td>
                                 <td>
