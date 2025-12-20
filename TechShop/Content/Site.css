@@ -211,6 +211,206 @@ a {
     border-left: 4px solid #17a2b8;
 }
 
+/* ========== SEARCH BAR ========== */
+.search-container {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.25);
+}
+
+.search-form {
+    margin: 0;
+}
+
+.search-input-group {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+    .search-input-group .input-group-text.search-icon {
+        background: #fff;
+        border: none;
+        padding: 12px 15px;
+        color: #667eea;
+        font-size: 18px;
+    }
+
+.search-input {
+    border: none !important;
+    padding: 12px 15px;
+    font-size: 15px;
+    height: auto;
+    background: #fff;
+}
+
+    .search-input:focus {
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    .search-input::placeholder {
+        color: #adb5bd;
+        font-style: italic;
+    }
+
+.btn-search {
+    background: linear-gradient(135deg, #28d27f, #20b86d);
+    color: #fff;
+    border: none;
+    padding: 12px 25px;
+    font-weight: 600;
+    transition: all 0.3s;
+    border-radius: 0;
+}
+
+    .btn-search:hover {
+        background: linear-gradient(135deg, #20b86d, #1a9d5f);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(40, 210, 127, 0.4);
+    }
+
+    .btn-search i {
+        margin-right: 5px;
+    }
+
+.btn-clear {
+    background: #ff5b6a;
+    color: #fff;
+    border: none;
+    padding: 12px 15px;
+    transition: all 0.3s;
+    border-radius: 0;
+}
+
+    .btn-clear:hover {
+        background: #e63946;
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+/* ========== SEARCH RESULT MESSAGE ========== */
+.product-title span {
+    display: inline-block;
+}
+
+/* ========== NO RESULTS ALERT ========== */
+.alert-info {
+    background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+    color: #0c5460;
+    border: 2px solid #17a2b8;
+    border-radius: 12px;
+    padding: 30px;
+}
+
+    .alert-info i.fa-info-circle {
+        color: #17a2b8;
+    }
+
+    .alert-info h5 {
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .alert-info strong {
+        color: #667eea;
+    }
+
+
+/* ========== CAROUSEL BANNER ========== */
+#carouselBanner {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+    #carouselBanner .carousel-item {
+        transition: transform 0.6s ease-in-out;
+    }
+
+        #carouselBanner .carousel-item img {
+            border-radius: 15px;
+        }
+
+    /* Indicators (Dots) */
+    #carouselBanner .carousel-indicators {
+        bottom: 20px;
+    }
+
+        #carouselBanner .carousel-indicators li {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            border: 2px solid #fff;
+            transition: all 0.3s;
+        }
+
+            #carouselBanner .carousel-indicators li.active {
+                width: 30px;
+                border-radius: 6px;
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                border-color: #fff;
+            }
+
+    /* Controls (Prev/Next Buttons) */
+    #carouselBanner .carousel-control-prev,
+    #carouselBanner .carousel-control-next {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 50%;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0;
+        transition: all 0.3s;
+    }
+
+    #carouselBanner:hover .carousel-control-prev,
+    #carouselBanner:hover .carousel-control-next {
+        opacity: 1;
+    }
+
+    #carouselBanner .carousel-control-prev {
+        left: 20px;
+    }
+
+    #carouselBanner .carousel-control-next {
+        right: 20px;
+    }
+
+        #carouselBanner .carousel-control-prev:hover,
+        #carouselBanner .carousel-control-next:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+    #carouselBanner .carousel-control-prev-icon,
+    #carouselBanner .carousel-control-next-icon {
+        width: 25px;
+        height: 25px;
+    }
+
+/* ========== SECTION TITLE ========== */
+.section-title {
+    font-weight: 700;
+    color: #2c3e50;
+    border-left: 5px solid;
+    border-image: linear-gradient(135deg, #667eea, #764ba2) 1;
+    padding-left: 15px;
+    margin-bottom: 20px;
+}
+
+    .section-title i {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-right: 10px;
+    }
+
+
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
     .product-header {

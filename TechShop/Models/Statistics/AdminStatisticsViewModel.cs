@@ -33,7 +33,7 @@ namespace TechShop.Models.Statistics
         public decimal TotalAmount { get; set; }
     }
 
-    public class StatisticsViewModel
+    public class AdminStatisticsViewModel
     {
         public string Period { get; set; }
 

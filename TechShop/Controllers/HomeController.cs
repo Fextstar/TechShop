@@ -55,8 +55,8 @@ namespace TechShop.Controllers
             }
         }
 
-        // Danh sách sản phẩm
-        public ActionResult Products(int? categoryId, string search, string sortBy)
+        // Danh sách sản phẩm - CẬP NHẬT
+        public ActionResult Products(int? categoryId, string searchQuery, string sortBy)
         {
             try
             {
@@ -87,20 +87,21 @@ namespace TechShop.Controllers
 
                         products = products.Where(p => categoryIds.Contains(p.CategoryID)).ToList();
                         ViewBag.CurrentCategory = category.CategoryName;
+                        ViewBag.CategoryId = categoryId.Value;
                     }
                 }
 
-                // Tìm kiếm
-                if (!string.IsNullOrEmpty(search))
+                // Tìm kiếm - THAY ĐỔI TỪ "search" THÀNH "searchQuery"
+                if (!string.IsNullOrEmpty(searchQuery))
                 {
-                    search = search.ToLower();
+                    searchQuery = searchQuery.Trim().ToLower();
                     products = products.Where(p =>
-                        p.ProductName.ToLower().Contains(search) ||
-                        (p.Description != null && p.Description.ToLower().Contains(search)) ||
-                        p.Brand.BrandName.ToLower().Contains(search) ||
-                        p.Category.CategoryName.ToLower().Contains(search)
+                        p.ProductName.ToLower().Contains(searchQuery) ||
+                        (p.Description != null && p.Description.ToLower().Contains(searchQuery)) ||
+                        (p.Brand != null && p.Brand.BrandName.ToLower().Contains(searchQuery)) ||
+                        (p.Category != null && p.Category.CategoryName.ToLower().Contains(searchQuery))
                     ).ToList();
-                    ViewBag.SearchTerm = search;
+                    ViewBag.SearchQuery = searchQuery; // THAY ĐỔI TỪ SearchTerm
                 }
 
                 // Sắp xếp

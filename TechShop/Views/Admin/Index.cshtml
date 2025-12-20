@@ -12,6 +12,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+
+
     <style>
         * {
             margin: 0;
@@ -210,6 +212,12 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+
         .chart-header {
             font-size: 18px;
             font-weight: 600;
@@ -297,11 +305,14 @@
                 box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
             }
 
-        /* Alert */
+        /* Alert - CỐ ĐỊNH KHÔNG BIẾN MẤT */
         .alert {
             padding: 15px 20px;
             border-radius: 8px;
             margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .alert-success {
@@ -314,6 +325,12 @@
             background: #fff3cd;
             color: #856404;
             border-left: 4px solid #ffc107;
+        }
+
+        .alert-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         /* Responsive */
@@ -338,7 +355,7 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
+    <!--SIDE BAR-->
     <div class="sidebar">
         <div class="sidebar-header">
             <div class="logo">
@@ -376,10 +393,10 @@
                 <i class="fas fa-chart-bar"></i>
                 <span>Thống kê</span>
             </a>
-            <a href="@Url.Action("Settings", "Admin")" class="menu-item">
-                <i class="fas fa-cog"></i>
-                <span>Cấu hình</span>
-            </a>
+            <!-- <a href="@Url.Action("Settings", "Admin")" class="menu-item">
+         <i class="fas fa-cog"></i>
+         <span>Cấu hình</span>
+     </a>-->
             <a href="@Url.Action("Index", "Home")" class="menu-item">
                 <i class="fas fa-home"></i>
                 <span>Về trang chủ</span>
@@ -391,9 +408,7 @@
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
-        <!-- Top Bar -->
         <div class="topbar">
             <h1 class="page-title">Dashboard</h1>
             <div class="user-info">
@@ -404,24 +419,37 @@
             </div>
         </div>
 
-        <!-- Alerts -->
-        @if (TempData["SuccessMessage"] != null)
+        @{
+            int lowStockCount = Model?.LowStockProducts ?? 0;
+            int pendingOrdersCount = Model?.PendingOrders ?? 0;
+        }
+
+        @if (lowStockCount > 0)
         {
-            <div class="alert alert-success">
-                <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+            <div class="alert alert-warning persistent-alert">
+                <div class="alert-content">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>
+                        Cảnh báo: Có <strong>@lowStockCount sản phẩm</strong> sắp hết hàng!
+                    </span>
+                </div>
+                <a href="@Url.Action("Products", "Admin")" class="btn btn-primary">Xem ngay</a>
             </div>
         }
 
-        @if (Model.LowStockProducts > 0)
+        @if (pendingOrdersCount > 0)
         {
-            <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle"></i>
-                Cảnh báo: Có <strong>@Model.LowStockProducts sản phẩm</strong> sắp hết hàng!
-                <a href="@Url.Action("Products", "Admin")" class="btn btn-primary" style="margin-left: 10px;">Xem ngay</a>
+            <div class="alert alert-warning persistent-alert">
+                <div class="alert-content">
+                    <i class="fas fa-clock"></i>
+                    <span>
+                        Bạn có <strong>@pendingOrdersCount đơn hàng</strong> đang chờ xử lý!
+                    </span>
+                </div>
+                <a href="@Url.Action("Orders", "Admin")" class="btn btn-primary">Xem ngay</a>
             </div>
         }
 
-        <!-- Stats Cards -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-info">
@@ -435,7 +463,7 @@
 
             <div class="stat-card">
                 <div class="stat-info">
-                    <h3>Tổng đơn hàng</h3>
+                    <h3>Đơn hàng (7 ngày qua)</h3>
                     <div class="number">@((Model?.TotalOrders ?? 0).ToString("N0"))</div>
                 </div>
                 <div class="stat-icon green">
@@ -455,7 +483,7 @@
 
             <div class="stat-card">
                 <div class="stat-info">
-                    <h3>Khách hàng</h3>
+                    <h3>Khách hàng (7 ngày qua)</h3>
                     <div class="number">@((Model?.TotalCustomers ?? 0).ToString("N0"))</div>
                 </div>
                 <div class="stat-icon purple">
@@ -484,25 +512,26 @@
             </div>
         </div>
 
-
-        <!-- Charts -->
         <div class="charts-grid">
             <div class="chart-card">
                 <div class="chart-header">
                     <i class="fas fa-chart-line"></i> Doanh thu 7 ngày qua
                 </div>
-                <canvas id="revenueChart" height="250"></canvas>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
             </div>
 
             <div class="chart-card">
                 <div class="chart-header">
                     <i class="fas fa-chart-pie"></i> Sản phẩm bán chạy
                 </div>
-                <canvas id="productsChart" height="250"></canvas>
+                <div class="chart-container">
+                    <canvas id="productsChart"></canvas>
+                </div>
             </div>
         </div>
 
-        <!-- Recent Orders -->
         <div class="table-card">
             <div class="chart-header">
                 <i class="fas fa-shopping-cart"></i> Đơn hàng gần đây
@@ -517,7 +546,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Revenue Chart (Fixed size)
+        // Revenue Chart - CỐ ĐỊNH KÍCH THƯỚC
         const revenueCtx = document.getElementById('revenueChart').getContext('2d');
         new Chart(revenueCtx, {
             type: 'line',
@@ -533,7 +562,7 @@
                 }]
             },
             options: {
-                responsive: false,              // << Fix không cho dãn vô hạn
+                responsive: true,
                 maintainAspectRatio: false,
                 scales: {
                     y: { beginAtZero: true }
@@ -544,9 +573,7 @@
             }
         });
 
-        });
-
-        // Products Chart
+        // Products Chart - CỐ ĐỊNH KÍCH THƯỚC
         const productsCtx = document.getElementById('productsChart').getContext('2d');
         new Chart(productsCtx, {
             type: 'doughnut',

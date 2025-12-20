@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
@@ -6,6 +8,9 @@ using System.Web;
 using System.Web.Mvc;
 using TechShop.Models;
 using TechShop.Models.User___Authentication;
+
+
+
 
 namespace TechShop.Controllers
 {
@@ -50,17 +55,41 @@ namespace TechShop.Controllers
         // ==========================================
         public ActionResult Index()
         {
+            var sevenDaysAgo = DateTime.Now.AddDays(-7);
+            var today = DateTime.Now;
+
             var model = new DashboardViewModel
             {
+                // Tổng sản phẩm (tất cả)
                 TotalProducts = db.Products.Count(),
-                TotalOrders = db.Orders.Count(),
-                TotalCustomers = db.Users.Count(),
-                MonthlyRevenue = db.Orders
-                    .Where(o => o.Status.StatusName == "Đã giao")
-                    .Sum(o => (decimal?)o.FinalAmount) ?? 0,
-                PendingOrders = db.Orders.Count(o => o.Status.StatusName == "Chờ xác nhận"),
-                LowStockProducts = db.Products.Count(p => p.StockQuantity < p.MinStockLevel),
 
+                // Đơn hàng 7 ngày qua
+                TotalOrders = db.Orders
+                    .Count(o => o.OrderDate >= sevenDaysAgo && o.OrderDate <= today),
+
+                // Khách hàng truy cập 7 ngày qua (users đã đặt hàng)
+                TotalCustomers = db.Orders
+                    .Where(o => o.OrderDate >= sevenDaysAgo && o.OrderDate <= today)
+                    .Select(o => o.UserID)
+                    .Distinct()
+                    .Count(),
+
+                // Doanh thu tháng này
+                MonthlyRevenue = db.Orders
+                    .Where(o => o.Status.StatusName == "Đã giao"
+                             && o.OrderDate.Month == DateTime.Now.Month
+                             && o.OrderDate.Year == DateTime.Now.Year)
+                    .Sum(o => (decimal?)o.FinalAmount) ?? 0,
+
+                // Đơn chờ xử lý
+                PendingOrders = db.Orders
+                    .Count(o => o.Status.StatusName == "Chờ xác nhận"),
+
+                // Sản phẩm sắp hết hàng
+                LowStockProducts = db.Products
+                    .Count(p => p.StockQuantity < p.MinStockLevel),
+
+                // Đơn hàng gần đây
                 RecentOrders = db.Orders
                     .Include(o => o.Status)
                     .Include(o => o.User)
@@ -117,17 +146,40 @@ namespace TechShop.Controllers
             return View();
         }
 
+
         // POST: Admin/CreateProduct
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult CreateProduct(Product model, HttpPostedFileBase ImageFile)
+        public ActionResult CreateProduct(Product model, HttpPostedFileBase ImageFile, string[] SpecKeys, string[] SpecValues)
         {
             if (ModelState.IsValid)
             {
+                // ✅ XỬ LÝ THÔNG SỐ KỸ THUẬT (Bảng 2 cột)
+                if (SpecKeys != null && SpecValues != null)
+                {
+                    var specs = new Dictionary<string, string>();
+
+                    for (int i = 0; i < SpecKeys.Length; i++)
+                    {
+                        if (!string.IsNullOrWhiteSpace(SpecKeys[i]) &&
+                            !string.IsNullOrWhiteSpace(SpecValues[i]))
+                        {
+                            specs[SpecKeys[i].Trim()] = SpecValues[i].Trim();
+                        }
+                    }
+
+                    // Chuyển thành JSON và lưu vào Specifications
+                    if (specs.Count > 0)
+                    {
+                        model.Specifications = JsonConvert.SerializeObject(specs);
+                    }
+                }
+
                 model.CreatedDate = DateTime.Now;
                 db.Products.Add(model);
                 db.SaveChanges();
 
+                // ✅ UPLOAD ẢNH
                 if (ImageFile != null && ImageFile.ContentLength > 0)
                 {
                     string folderPath = Server.MapPath("~/Content/Uploads/Products/");
@@ -482,18 +534,19 @@ namespace TechShop.Controllers
         // GET: Admin/Statistics
         public ActionResult Statistics(string period = "month")
         {
-            ViewBag.Period = period; // ⭐ BẮT BUỘC
-
-            var model = new
+            var model = new AdminStatisticsViewModel
             {
+                Period = period,
+
                 RevenueData = GetRevenueByPeriod(period),
 
                 TopProducts = db.OrderDetails
-                    .GroupBy(od => new { od.ProductID, od.ProductName })
-                    .Select(g => new {
-                        ProductName = g.Key.ProductName,
-                        TotalQuantity = g.Sum(od => od.Quantity),
-                        TotalRevenue = g.Sum(od => od.TotalPrice)
+                    .GroupBy(od => od.Product.ProductName)
+                    .Select(g => new TopProductViewModel
+                    {
+                        ProductName = g.Key,
+                        TotalQuantity = g.Sum(x => x.Quantity),
+                        TotalRevenue = g.Sum(x => x.TotalPrice)
                     })
                     .OrderByDescending(x => x.TotalQuantity)
                     .Take(10)
@@ -502,17 +555,18 @@ namespace TechShop.Controllers
                 CategoryStats = db.OrderDetails
                     .Include(od => od.Product.Category)
                     .GroupBy(od => od.Product.Category.CategoryName)
-                    .Select(g => new {
+                    .Select(g => new CategoryStatViewModel
+                    {
                         CategoryName = g.Key,
                         TotalOrders = g.Count(),
-                        TotalRevenue = g.Sum(od => od.TotalPrice)
+                        TotalRevenue = g.Sum(x => x.TotalPrice)
                     })
-                    .OrderByDescending(x => x.TotalRevenue)
                     .ToList(),
 
                 OrderStatusStats = db.Orders
                     .GroupBy(o => o.Status.StatusName)
-                    .Select(g => new {
+                    .Select(g => new OrderStatusStatViewModel
+                    {
                         StatusName = g.Key,
                         Count = g.Count(),
                         TotalAmount = g.Sum(o => o.FinalAmount)
@@ -536,62 +590,47 @@ namespace TechShop.Controllers
         }
 
 
+
         // Helper method - Lấy doanh thu theo khoảng thời gian
-        private object GetRevenueByPeriod(string period)
+        private List<RevenuePointViewModel> GetRevenueByPeriod(string period)
         {
             var now = DateTime.Now;
 
-            switch (period.ToLower())
+            if (period == "year")
             {
-                case "week":
-                    // 7 ngày gần nhất
-                    return Enumerable.Range(0, 7)
-                        .Select(i => now.AddDays(-i))
-                        .OrderBy(d => d)
-                        .Select(date => new {
-                            Date = date.ToString("dd/MM"),
-                            Revenue = db.Orders
-                                .Where(o => o.Status.StatusName == "Đã giao"
-                                    && DbFunctions.TruncateTime(o.OrderDate) == DbFunctions.TruncateTime(date))
-                                .Sum(o => (decimal?)o.FinalAmount) ?? 0,
-                            Orders = db.Orders
-                                .Count(o => DbFunctions.TruncateTime(o.OrderDate) == DbFunctions.TruncateTime(date))
-                        })
-                        .ToList();
-
-                case "year":
-                    // 12 tháng trong năm
-                    return Enumerable.Range(1, 12)
-                        .Select(month => new {
-                            Date = $"T{month}",
-                            Revenue = db.Orders
-                                .Where(o => o.Status.StatusName == "Đã giao"
-                                    && o.OrderDate.Year == now.Year
-                                    && o.OrderDate.Month == month)
-                                .Sum(o => (decimal?)o.FinalAmount) ?? 0,
-                            Orders = db.Orders
-                                .Count(o => o.OrderDate.Year == now.Year
-                                    && o.OrderDate.Month == month)
-                        })
-                        .ToList();
-
-                default: // month
-                    // 30 ngày gần nhất
-                    return Enumerable.Range(0, 30)
-                        .Select(i => now.AddDays(-i))
-                        .OrderBy(d => d)
-                        .Select(date => new {
-                            Date = date.ToString("dd/MM"),
-                            Revenue = db.Orders
-                                .Where(o => o.Status.StatusName == "Đã giao"
-                                    && DbFunctions.TruncateTime(o.OrderDate) == DbFunctions.TruncateTime(date))
-                                .Sum(o => (decimal?)o.FinalAmount) ?? 0,
-                            Orders = db.Orders
-                                .Count(o => DbFunctions.TruncateTime(o.OrderDate) == DbFunctions.TruncateTime(date))
-                        })
-                        .ToList();
+                return Enumerable.Range(1, 12)
+                    .Select(m => new RevenuePointViewModel
+                    {
+                        Date = $"T{m}",
+                        Revenue = db.Orders
+                            .Where(o => o.Status.StatusName == "Đã giao"
+                                && o.OrderDate.Year == now.Year
+                                && o.OrderDate.Month == m)
+                            .Sum(o => (decimal?)o.FinalAmount) ?? 0,
+                        Orders = db.Orders
+                            .Count(o => o.OrderDate.Year == now.Year && o.OrderDate.Month == m)
+                    }).ToList();
             }
+
+            int days = period == "week" ? 7 : 30;
+
+            return Enumerable.Range(0, days)
+                .Select(i => now.AddDays(-i))
+                .OrderBy(d => d)
+                .Select(date => new RevenuePointViewModel
+                {
+                    Date = date.ToString("dd/MM"),
+                    Revenue = db.Orders
+                        .Where(o => o.Status.StatusName == "Đã giao"
+                            && DbFunctions.TruncateTime(o.OrderDate) == DbFunctions.TruncateTime(date))
+                        .Sum(o => (decimal?)o.FinalAmount) ?? 0,
+                    Orders = db.Orders
+                        .Count(o => DbFunctions.TruncateTime(o.OrderDate) == DbFunctions.TruncateTime(date))
+                }).ToList();
         }
+
+
+
         // GET: Admin/Brands
         public ActionResult Brands()
         {

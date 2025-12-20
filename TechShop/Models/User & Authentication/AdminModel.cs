@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
+using TechShop.Models.Statistics;
 
 namespace TechShop.Models.User___Authentication
 {
@@ -217,4 +218,65 @@ namespace TechShop.Models.User___Authentication
         public int ProductCount { get; set; }
         public int CustomerCount { get; set; }
     }
+
+    /// <summary>
+    /// ViewModel cho Statistics nâng cao (Admin - Charts & Reports)
+    /// </summary>
+    public class AdminStatisticsViewModel
+    {
+        public string Period { get; set; }
+
+        // Biểu đồ doanh thu
+        public List<RevenuePointViewModel> RevenueData { get; set; }
+
+        // Top sản phẩm
+        public List<TopProductViewModel> TopProducts { get; set; }
+
+        // Thống kê theo danh mục
+        public List<CategoryStatViewModel> CategoryStats { get; set; }
+
+        // Trạng thái đơn hàng
+        public List<OrderStatusStatViewModel> OrderStatusStats { get; set; }
+
+        // Tổng quan
+        public decimal TotalRevenue { get; set; }
+        public int TotalOrders { get; set; }
+        public int CompletedOrders { get; set; }
+        public int PendingOrders { get; set; }
+        public int CancelledOrders { get; set; }
+        public int TotalCustomers { get; set; }
+        public int TotalProducts { get; set; }
+        public int LowStockProducts { get; set; }
+    }
+
+    public class RevenuePointViewModel
+    {
+        public string Date { get; set; }
+        public decimal Revenue { get; set; }
+        public int Orders { get; set; }
+    }
+
+    public class TopProductViewModel
+    {
+        public string ProductName { get; set; }
+        public int TotalQuantity { get; set; }
+        public decimal TotalRevenue { get; set; }
+    }
+
+    public class CategoryStatViewModel
+    {
+        public string CategoryName { get; set; }
+        public int TotalOrders { get; set; }
+        public decimal TotalRevenue { get; set; }
+    }
+
+    public class OrderStatusStatViewModel
+    {
+        public string StatusName { get; set; }
+        public int Count { get; set; }
+        public decimal TotalAmount { get; set; }
+    }
+
 }
+
+

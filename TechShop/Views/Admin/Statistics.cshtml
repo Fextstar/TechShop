@@ -1,10 +1,7 @@
-﻿@model dynamic
+﻿@model TechShop.Models.User___Authentication.AdminStatisticsViewModel
 @{
     ViewBag.Title = "Thống kê doanh thu";
     Layout = null;
-
-    // ÉP dynamic để tránh RuntimeBinderException
-    dynamic m = Model;
 }
 
 <!DOCTYPE html>
@@ -13,13 +10,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title</title>
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
         body {
@@ -27,6 +26,7 @@
             background: #f5f6fa;
         }
 
+        /* SIDEBAR */
         .sidebar {
             position: fixed;
             top: 0;
@@ -38,18 +38,11 @@
             padding: 20px 0;
         }
 
-        .sidebar-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
         .logo {
+            text-align: center;
             font-size: 22px;
             font-weight: bold;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            align-items: center;
+            margin-bottom: 30px;
         }
 
         .menu-item {
@@ -59,58 +52,31 @@
             gap: 12px;
             color: #fff;
             text-decoration: none;
-            font-size: 15px;
             border-left: 3px solid transparent;
         }
 
             .menu-item:hover,
             .menu-item.active {
-                background: rgba(255,255,255,0.12);
+                background: rgba(255,255,255,0.15);
                 border-left-color: #fff;
             }
 
+        /* MAIN */
         .main-content {
             margin-left: 260px;
             padding: 30px;
-            min-height: 100vh;
         }
 
         .topbar {
             background: #fff;
             padding: 20px 25px;
             border-radius: 12px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
             margin-bottom: 25px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.08);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-
-        .page-title {
-            font-size: 22px;
-            font-weight: 700;
-        }
-
-        .period-filter {
-            display: flex;
-            gap: 10px;
-        }
-
-        .period-btn {
-            padding: 10px 20px;
-            border: 2px solid #667eea;
-            background: #fff;
-            color: #667eea;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-            .period-btn.active,
-            .period-btn:hover {
-                background: #667eea;
-                color: #fff;
-            }
 
         .stats-grid {
             display: grid;
@@ -123,64 +89,23 @@
             background: #fff;
             padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 3px 12px rgba(0,0,0,.08);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .stat-info h3 {
-            font-size: 14px;
-            color: #7f8c8d;
-        }
-
         .number {
             font-size: 26px;
             font-weight: bold;
-            color: #2c3e50;
-        }
-
-        .stat-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 22px;
-        }
-
-        .blue {
-            background: #667eea;
-        }
-
-        .green {
-            background: #38ef7d;
-        }
-
-        .purple {
-            background: #6c5ce7;
-        }
-
-        .orange {
-            background: #ffa502;
-        }
-
-        .red {
-            background: #ff6b6b;
-        }
-
-        .teal {
-            background: #00cec9;
         }
 
         .chart-card {
             background: #fff;
             padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.08);
+            margin-bottom: 25px;
         }
 
         table {
@@ -200,25 +125,11 @@
         .text-right {
             text-align: right;
         }
-
-        .text-danger {
-            color: #dc3545;
-        }
-
-        .text-success {
-            color: #28a745;
-        }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar -->
+    <!-- SIDEBAR -->
     <div class="sidebar">
         <div class="sidebar-header">
             <div class="logo">
@@ -256,10 +167,10 @@
                 <i class="fas fa-chart-bar"></i>
                 <span>Thống kê</span>
             </a>
-            <a href="@Url.Action("Settings", "Admin")" class="menu-item">
+            <!-- <a href="@Url.Action("Settings", "Admin")" class="menu-item">
                 <i class="fas fa-cog"></i>
                 <span>Cấu hình</span>
-            </a>
+            </a>-->
             <a href="@Url.Action("Index", "Home")" class="menu-item">
                 <i class="fas fa-home"></i>
                 <span>Về trang chủ</span>
@@ -275,80 +186,74 @@
     <div class="main-content">
 
         <div class="topbar">
-            <h1 class="page-title">
-                <i class="fas fa-chart-line"></i> Thống kê doanh thu
-            </h1>
-
-            <div class="period-filter">
-                <a class="period-btn @(m.Period=="week"?"active":"")"
-                   href="@Url.Action("Statistics",new{period="week"})">7 Ngày</a>
-
-                <a class="period-btn @(m.Period=="month"?"active":"")"
-                   href="@Url.Action("Statistics",new{period="month"})">30 Ngày</a>
-
-                <a class="period-btn @(m.Period=="year"?"active":"")"
-                   href="@Url.Action("Statistics",new{period="year"})">Năm</a>
+            <h2><i class="fas fa-chart-line"></i> Thống kê doanh thu</h2>
+            <div>
+                <a href="@Url.Action("Statistics", new { period="week" })">7 ngày</a> |
+                <a href="@Url.Action("Statistics", new { period="month" })">30 ngày</a> |
+                <a href="@Url.Action("Statistics", new { period="year" })">Năm</a>
             </div>
         </div>
 
         <!-- STATS -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-info">
-                    <h3>Tổng doanh thu</h3>
-                    <div class="number">@m.TotalRevenue.ToString("N0") đ</div>
+                <div>
+                    <h4>Tổng doanh thu</h4>
+                    <div class="number">@Model.TotalRevenue.ToString("N0") đ</div>
                 </div>
-                <div class="stat-icon blue"><i class="fas fa-dollar-sign"></i></div>
+                <i class="fas fa-dollar-sign fa-2x"></i>
             </div>
 
             <div class="stat-card">
-                <div class="stat-info">
-                    <h3>Tổng đơn</h3>
-                    <div class="number">@m.TotalOrders.ToString("N0")</div>
+                <div>
+                    <h4>Tổng đơn</h4>
+                    <div class="number">@Model.TotalOrders</div>
                 </div>
-                <div class="stat-icon green"><i class="fas fa-shopping-cart"></i></div>
+                <i class="fas fa-shopping-cart fa-2x"></i>
             </div>
 
             <div class="stat-card">
-                <div class="stat-info">
-                    <h3>Đơn hoàn thành</h3>
-                    <div class="number">@m.CompletedOrders.ToString("N0")</div>
+                <div>
+                    <h4>Hoàn thành</h4>
+                    <div class="number">@Model.CompletedOrders</div>
                 </div>
-                <div class="stat-icon purple"><i class="fas fa-check-circle"></i></div>
+                <i class="fas fa-check-circle fa-2x"></i>
             </div>
 
             <div class="stat-card">
-                <div class="stat-info">
-                    <h3>Khách hàng</h3>
-                    <div class="number">@m.TotalCustomers.ToString("N0")</div>
+                <div>
+                    <h4>Khách hàng</h4>
+                    <div class="number">@Model.TotalCustomers</div>
                 </div>
-                <div class="stat-icon orange"><i class="fas fa-users"></i></div>
+                <i class="fas fa-users fa-2x"></i>
             </div>
+        </div>
 
-            <div class="stat-card">
-                <div class="stat-info">
-                    <h3>Đơn chờ</h3>
-                    <div class="number">@m.PendingOrders.ToString("N0")</div>
-                </div>
-                <div class="stat-icon red"><i class="fas fa-clock"></i></div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-info">
-                    <h3>Sắp hết hàng</h3>
-                    <div class="number">@m.LowStockProducts.ToString("N0")</div>
-                </div>
-                <div class="stat-icon teal"><i class="fas fa-exclamation-triangle"></i></div>
-            </div>
+        <!-- CHART -->
+        <div class="chart-card">
+            <h3>Biểu đồ doanh thu</h3>
+            <canvas id="revenueChart"></canvas>
         </div>
 
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
     const revenueData = @Html.Raw(
-        Newtonsoft.Json.JsonConvert.SerializeObject(m.RevenueData)
+        Newtonsoft.Json.JsonConvert.SerializeObject(Model.RevenueData)
     );
+
+    new Chart(document.getElementById('revenueChart'), {
+        type: 'line',
+        data: {
+            labels: revenueData.map(x => x.Date),
+            datasets: [{
+                label: 'Doanh thu',
+                data: revenueData.map(x => x.Revenue),
+                borderWidth: 3,
+                tension: 0.3
+            }]
+        }
+    });
     </script>
 
 </body>

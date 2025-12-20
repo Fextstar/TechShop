@@ -145,7 +145,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\Statistics\StatisticsViewModel.cs" />
+    <Compile Include="Models\Statistics\AdminStatisticsViewModel.cs" />
     <Compile Include="Models\System\ActivityLog.cs" />
     <Compile Include="Models\ApplicationDbContext.cs" />
     <Compile Include="Models\Content\Banner.cs" />
@@ -197,6 +197,7 @@
     <Content Include="Content\Uploads\Posts\welcome.jpg" />
     <Content Include="Content\Uploads\Products\CPU-INTEL-ULTRA-9-285K.png" />
     <Content Include="Content\Uploads\Products\Laptop ASUS Zenbook 14 UX3405CA PZ204WS.png" />
+    <Content Include="Content\Uploads\Products\Laptop ASUS Zenbook 14 UX3407QA QD299WS.jpg" />
     <Content Include="Content\Uploads\Products\Laptop gaming MSI Crosshair 16 HX AI D2XWGKG 072VN.png" />
     <Content Include="Content\Uploads\Products\MB-ASUS-ROG-Z790A-GWII-DDR5.jpg" />
     <Content Include="Content\Uploads\Products\Nguồn máy tính MSI MAG A850GL PCIE5 WHITE - 80 Plus Gold - Full Modular %28850W%29.png" />
@@ -212,6 +213,7 @@
     <Content Include="Scripts\bootstrap.esm.min.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="ControllerDiagram.cd" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\cart.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />

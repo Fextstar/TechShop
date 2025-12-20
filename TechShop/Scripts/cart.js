@@ -271,8 +271,9 @@ $(document).ready(function () {
         }
     });
 
-    // Auto-hide alerts
+    // Auto-hide alerts - CHỈ ẨN NOTIFICATION, KHÔNG ẨN PERSISTENT ALERT
     setTimeout(function () {
-        $('.alert:not(.cart-notification)').fadeOut('slow');
+        // Chỉ ẩn các alert không có class 'persistent-alert'
+        $('.alert:not(.cart-notification):not(.persistent-alert)').fadeOut('slow');
     }, 5000);
 });
